@@ -134,6 +134,7 @@ class ThreadPoolExecutor(_base.Executor):
             w = _WorkItem(f, fn, args, kwargs)
             
             #work queue被所有线程共享, 里面放入 _WorkItem对象
+            #_WotkItem对象有一个 属性是Future的实例, 用它来储存返回结果, 并且该实例会被submmit返回
             self._work_queue.put(w)
             self._adjust_thread_count()
             return f
