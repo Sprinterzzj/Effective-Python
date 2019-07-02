@@ -16,6 +16,45 @@
 
 # #### 事件循环 回调(驱动生成器) IO多路复用
 
+# In[1]:
+
+
+import asyncio
+
+
+# 注意 time.sleep是同步阻塞的接口, 不能用在异步的函数里面
+
+# In[9]:
+
+
+async def get_html(url):
+    print('start get url')
+    #在协程中使用阻塞IO需要谨慎!!!
+    #下面的代码需要 加 await, 下面的代码会立即返回!!!!
+    await asyncio.sleep(2)
+    print('end get url')
+    return 'nimabi'
+
+
+# In[13]:
+
+
+def main():
+    #获取时间循环
+    loop = asyncio.get_event_loop()
+    
+    #接受协程返回值的两个方式: task 或者 future
+    task = loop.create_task(get_html('nimabi'))
+    loop.run_until_complete(task)
+    print(task.result())
+    
+    get_future = asyncio.ensure_future(get_html('nimabi'))
+    loop.run_until_complete(get_future)
+    print(get_future.result())
+
+
+# callback 函数用于特定的协程执行完之后作为回调
+
 # In[ ]:
 
 
