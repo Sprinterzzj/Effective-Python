@@ -1,0 +1,73 @@
+
+#in my_module.py
+def determine_weight(volume, density):
+    if density <= 0:
+        raise ValueError('Density must be positive.')
+    pass
+
+#比起用 ValueError, 当你的模块变得更大时, 定义你自己的异常类更好
+class Error(Exception):
+    # The base error class
+    pass
+class InvalidDensityError(Error):
+    pass
+def determine_weight(volume, density):
+    if density <=0:
+        raise InvalidDensityError
+    pass
+
+#你可以这么用:
+import logging
+try:
+    weight = determine_weight(1, -1)
+except Error as e:
+    logging.error('Unexpected error: %s', e)
+
+#注意， 定义你自己的异常类可以使user更好的弄清 bug
+
+#按照如下顺序捕捉异常,能让你知道bug出在哪
+try:
+    weight = determine_weight(1, -1)
+except InvalidDensityError:
+    #首先捕捉你自己定义的异常
+    weight = 0
+except Error as e:
+    #倒数第二的是你的异常基类,如果捕捉到的时你自己定义的异常,
+    #一般说明是调用者出现了问题
+    logging.error('Bug in the calling code: %s', e)
+except Exception as e:
+    logging.error('Bug in the API code: %s', e)
+    raise
+
+#定义自己的异常类还有一个好处, 将来你的代码扩充功能时，相应的可以派生新的异常类
+class NegativeDensityError(InvalidDensityError):
+    pass
+
+def determine_weight(volume, density):
+    if density < 0:
+        raise NegativeDensityError
+try:
+    weight = determine_weight(1, -1)
+except NegativeDensityError as e:
+    raise ValueError('Must supply non-negative density') from e
+except InvalidDensityError:
+    weight = 0
+except Error as e:
+    logging.error('Bug in the calling code: %s', e)
+except Exception as e:
+    logging.error('Bug in the API code: %s', e)
+    raise
+
+#1. 从 sys.path中查询你要导入的模块的路径
+#2. 从模块中导入代码，并且保证它被编译
+#3. 产生一个对应的空 模块对象
+#4. 将模块 插入到sys.modules中
+#5. 在module对象中运行代码
+
+#如何处理循环导入问题？
+#1. 在你的模块中只写定义相关的代码：定义常量，类，函数。！！避免在导入你的模块时候跑其他函数！！
+#2. 在你的模块中提供一个 configure函数。然后当你导入完所有模块后,运行configure函数
+##(当然有时候很难将configure函数组织起来)
+#3. 动态导入, 将导入语句写进函数,在你运行函数的时候导入模块
+
+
