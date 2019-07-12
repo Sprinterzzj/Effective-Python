@@ -427,14 +427,14 @@ main(data)
 
 # ##### Use Case: 离散事件模拟-- 出租车模拟
 
-# In[14]:
+# In[3]:
 
 
 from collections import namedtuple
 Event = namedtuple('Event', ['time', 'proc', 'action'])
 
 
-# In[15]:
+# In[4]:
 
 
 def taxi_process(ident, trips, start_time=0):
@@ -455,7 +455,7 @@ def taxi_process(ident, trips, start_time=0):
     return
 
 
-# In[29]:
+# In[5]:
 
 
 #使用
@@ -475,6 +475,125 @@ try:
     taxi.send(time() + 10)
 except StopIteration:
     print('生成器终止')
+
+
+# In[13]:
+
+
+from queue import PriorityQueue
+import time
+import random
+taxis = {0: taxi_process(ident=0, trips=2, start_time=0),
+         1: taxi_process(ident=1, trips=4, start_time=5),
+         2: taxi_process(ident=2, trips=6, start_time=10)
+        }
+
+DEFAULT_NUMBER_OF_TAXIS = 3
+DEFAULT_END_TIME = 180
+SEARCH_DURATION = 5
+TRIP_DURATION = 20
+DEPARTURE_INTERVAL = 5
+def compute_duration(previous_action):
+    """基于指数分布计算时间
+    """
+    if previous_action in ('离开车站', '乘客下车'):
+        interval = SEARCH_DURATION
+    elif previous_action == '乘客上车':
+        interval = TRIP_DURATION
+    elif previous_action == '下班回家':
+        interval = 1
+    else:
+        raise ValueErro
+    return int(random.expovariate(1/interval)) + 1
+
+class Simulator(object):
+    def __init__(self, procs_map):
+        """
+        Parameters
+        ----------
+        procs_map: dict或map, key为出租车id, 是整数;
+        value为对应的生成器函数.
+        !!!注意: 出租车的 start_time 按照 key从小到大的顺序排列!!!
+        """
+        # 优先队列, 默认按时间递增顺序储存事件,即:
+        # Event 对象中 time较小的排在队头.
+        self.events = PriorityQueue()
+        # 我们新建一个字典, 这样防止修改原字典,
+        # 这里的字典形如上面的 taxis,即
+        # key: taxis_id value: 生成器函数 taxi_process
+        self.procs = dict(procs_map)
+    def run(self, end_time, delay=False): #1
+        """首先激活 procs 字典的每个生成器函数,
+        将每个生成器函数第一次yield的Event对象加入到优先队列
+        events中.
+        然后按时间先后运行events中的时间, 直到达到 end_time.
+        """
+        for _, proc in sorted(self.procs.items()): #2
+            first_event = next(proc)
+            self.events.put(first_event) #4
+        
+        sim_time = 0 #5
+        while sim_time < end_time: #6
+            if self.events.empty(): #7
+                print('所有出租车运行终止.')
+                break
+                
+            current_event = self.events.get() #8
+            if delay:
+                time.sleep((current_event.time - sim_time) / 2)
+            sim_time, proc_id, previous_action = current_event #9
+            print('taxi: ', proc_id, proc_id * '  ', current_event) #10
+            active_proc = self.procs[proc_id] #11
+            next_time = sim_time + compute_duration(previous_action) #12
+            try:
+                next_event = active_proc.send(next_time) #13
+            except StopIteration:
+                del self.procs[proc_id] #14
+            else:
+                self.events.put(next_event) #15
+        
+        else:
+            msg = '***时间结束, 还有 {} 件事情没有完成.'
+            print(msg.format(self.events.qsize()))
+
+
+# <center>逐行解释</center>
+# 
+# 2. 将 `procs` 字典按key大小排序, 这里的key是出租车编号
+# 3. 激活生成器, 并且使它 yield 第一个值(出租车离站的事件)
+# 4. 将3 yield 的第一个值 加到优先队列`events`中. 注意潜在的序关系: 编号靠前的出租车被优先加入, **它们的离站时间也是最早的**.
+# 5. sim\_time 初始化为 0
+# 6. 当 sim\_time 不小于 end\_time 时终止循环
+# 7. 当 `events` 不再有事件时也终止循环
+# 8. 获得当前最近的事件
+# 9. tuple 解包, 获得当前事件的 time, proc, action. **并且更新 sim_\time**.
+# 10. 打印当前事件
+# 11. 从`procs`字典中取出当前出租车(proc)的生成器函数
+# 12. 计算下个动作完成的时刻
+# 13. 将 12 中计算的时刻发送至当前出租车的生成器函数
+# 14. 如果生成器抛出了 StopIteration异常, 说明当前出租车已经回家了, 将**它从 `procs`中删除**.
+# 15. 如果生成器函数没有终止, 那么就将生成器发送的值(nect_event)加入到`event`.
+#         优先队列`event`按照Event对象中的 time 大小来维护队列!!!
+
+# In[14]:
+
+
+def main(end_time=DEFAULT_END_TIME, num_taxis=DEFAULT_NUMBER_OF_TAXIS,
+         seed=None, delay=False):
+    """Initialize random generator, build procs and run simulation"""
+    if seed is not None:
+        random.seed(seed)  # get reproducible results
+
+    taxis = {i: taxi_process(i, (i+1)*2, i*DEPARTURE_INTERVAL)
+             for i in range(num_taxis)}
+    sim = Simulator(taxis)
+    sim.run(end_time, delay)
+
+
+# In[16]:
+
+
+main(num_taxis=15, delay=True)
 
 
 # In[ ]:
