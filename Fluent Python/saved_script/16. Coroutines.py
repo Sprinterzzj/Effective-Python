@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # <h1>Table of Contents<span class="tocSkip"></span></h1>
-# <div class="toc"><ul class="toc-item"><li><span><a href="#协程及其执行过程" data-toc-modified-id="协程及其执行过程-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>协程及其执行过程</a></span><ul class="toc-item"><li><span><a href="#例子:-用协程实现-Running-Average" data-toc-modified-id="例子:-用协程实现-Running-Average-1.1"><span class="toc-item-num">1.1&nbsp;&nbsp;</span>例子: 用协程实现 Running Average</a></span></li><li><span><a href="#用装饰器激活协程函数" data-toc-modified-id="用装饰器激活协程函数-1.2"><span class="toc-item-num">1.2&nbsp;&nbsp;</span>用装饰器激活协程函数</a></span></li><li><span><a href="#协程的异常处理" data-toc-modified-id="协程的异常处理-1.3"><span class="toc-item-num">1.3&nbsp;&nbsp;</span>协程的异常处理</a></span></li><li><span><a href="#协程的返回值" data-toc-modified-id="协程的返回值-1.4"><span class="toc-item-num">1.4&nbsp;&nbsp;</span>协程的返回值</a></span></li></ul></li><li><span><a href="#yield-from" data-toc-modified-id="yield-from-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>yield from</a></span><ul class="toc-item"><li><span><a href="#yield-from-的使用" data-toc-modified-id="yield-from-的使用-2.1"><span class="toc-item-num">2.1&nbsp;&nbsp;</span>yield from 的使用</a></span></li></ul></li><li><span><a href="#yield-from-的含义" data-toc-modified-id="yield-from-的含义-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>yield from 的含义</a></span><ul class="toc-item"><li><span><a href="#一个简化的情形" data-toc-modified-id="一个简化的情形-3.1"><span class="toc-item-num">3.1&nbsp;&nbsp;</span>一个简化的情形</a></span></li><li><span><a href="#较为真实的情形" data-toc-modified-id="较为真实的情形-3.2"><span class="toc-item-num">3.2&nbsp;&nbsp;</span>较为真实的情形</a></span></li></ul></li><li><span><a href="#Use-Case:-离散事件模拟---出租车模拟" data-toc-modified-id="Use-Case:-离散事件模拟---出租车模拟-4"><span class="toc-item-num">4&nbsp;&nbsp;</span>Use Case: 离散事件模拟-- 出租车模拟</a></span></li></ul></div>
+# <div class="toc"><ul class="toc-item"><li><span><a href="#协程及其执行过程" data-toc-modified-id="协程及其执行过程-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>协程及其执行过程</a></span><ul class="toc-item"><li><span><a href="#例子:-用协程实现-Running-Average" data-toc-modified-id="例子:-用协程实现-Running-Average-1.1"><span class="toc-item-num">1.1&nbsp;&nbsp;</span>例子: 用协程实现 Running Average</a></span></li><li><span><a href="#用装饰器激活协程函数" data-toc-modified-id="用装饰器激活协程函数-1.2"><span class="toc-item-num">1.2&nbsp;&nbsp;</span>用装饰器激活协程函数</a></span></li><li><span><a href="#协程的异常处理" data-toc-modified-id="协程的异常处理-1.3"><span class="toc-item-num">1.3&nbsp;&nbsp;</span>协程的异常处理</a></span></li><li><span><a href="#协程的返回值" data-toc-modified-id="协程的返回值-1.4"><span class="toc-item-num">1.4&nbsp;&nbsp;</span>协程的返回值</a></span></li></ul></li><li><span><a href="#yield-from" data-toc-modified-id="yield-from-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>yield from</a></span><ul class="toc-item"><li><span><a href="#yield-from-的使用" data-toc-modified-id="yield-from-的使用-2.1"><span class="toc-item-num">2.1&nbsp;&nbsp;</span>yield from 的使用</a></span></li></ul></li><li><span><a href="#yield-from-的含义" data-toc-modified-id="yield-from-的含义-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>yield from 的含义</a></span><ul class="toc-item"><li><span><a href="#一个简化的情形" data-toc-modified-id="一个简化的情形-3.1"><span class="toc-item-num">3.1&nbsp;&nbsp;</span>一个简化的情形</a></span></li><li><span><a href="#较为真实的情形" data-toc-modified-id="较为真实的情形-3.2"><span class="toc-item-num">3.2&nbsp;&nbsp;</span>较为真实的情形</a></span></li></ul></li><li><span><a href="#Use-Case:-离散事件模拟---出租车模拟" data-toc-modified-id="Use-Case:-离散事件模拟---出租车模拟-4"><span class="toc-item-num">4&nbsp;&nbsp;</span>Use Case: 离散事件模拟-- 出租车模拟</a></span></li><li><span><a href="#Use-Case:-The-life-of-game" data-toc-modified-id="Use-Case:-The-life-of-game-5"><span class="toc-item-num">5&nbsp;&nbsp;</span>Use Case: The life of game</a></span></li></ul></div>
 
 # ##### 协程及其执行过程
 
@@ -594,6 +594,300 @@ def main(end_time=DEFAULT_END_TIME, num_taxis=DEFAULT_NUMBER_OF_TAXIS,
 
 
 main(num_taxis=15, delay=True)
+
+
+# ##### Use Case: The life of game
+# 摘自 Effective Python ch40
+
+# In[59]:
+
+
+# 每个细胞只有两种状态: 生 或 死(细胞死亡或者不存在)
+from collections import namedtuple
+ALIVE = '*'
+EMPTY = '@'
+def show_state(state):
+    if state == ALIVE:
+        return 'ALIVE'
+    elif state == EMPTY:
+        return 'EMPTY'
+    else:
+        raise ValueError
+# 规则: 在每个周期, 每个细胞根据它周围相邻的**8**细胞的状态来决定它在这轮结束后
+#      是生/死/重生
+
+# 下面的 tuple 描述了每个细胞的邻居
+Query = namedtuple('Query', ('y', 'x'))
+
+
+# 下面的子生成器生函数统计了每个细胞邻居们的状态
+def count_neighbors(y, x):
+    """y, x 是当前细胞的坐标,
+    返回当前细胞的八个邻居中的存活的细胞数
+    """
+    n_ = yield Query(y+1, x+0)
+    print(f'正上方细胞的状态: {show_state(n_)}.')
+    ne = yield Query(y+1, x+1)
+    print(f'右上方细胞的状态: {show_state(ne)}.')
+    nw = yield Query(y+1, x-1)
+    print(f'左上方细胞的状态: {show_state(nw)}.')
+    w_ = yield Query(y+0, x-1)
+    print(f'左方细胞的状态: {show_state(w_)}.')
+    e_ = yield Query(y+0, x+1)
+    print(f'右方细胞的状态: {show_state(e_)}.')
+    s_ = yield Query(y-1, x+0)
+    print(f'正下方细胞的状态: {show_state(s_)}.')
+    se = yield Query(y-1, x+1)
+    print(f'右下方细胞的状态: {show_state(se)}.')
+    sw = yield Query(y-1, x-1)
+    print(f'左下方细胞的状态: {show_state(sw)}.')
+
+    neighbor_states = [n_, ne, nw, w_,
+                       e_, s_, se, sw]
+    count = 0
+    for state in neighbor_states:
+        if state == ALIVE:
+            count += 1
+    return count
+
+
+# In[60]:
+
+
+it = count_neighbors(10, 5)
+q1 = next(it)                  # Get the first query
+print('First yield:  ', q1)
+q2 = it.send(ALIVE)            # Send q1 state, get q2
+print('Second yield: ', q2)
+q3 = it.send(EMPTY)            # Send q2 stete, get q3
+print('Third yield:  ', q3)
+q4 = it.send(ALIVE)            # Send q3 state, get q4
+print('Fourth yield: ', q4)
+q5 = it.send(EMPTY)            # Send q4 stete, get q5
+print('Fifth yield:  ', q5)
+q6 = it.send(EMPTY)            # Send q5 stete, get q6
+print('Sixth yield:  ', q6)
+q7 = it.send(EMPTY)            # Send q6 state, get q7
+print('Seventh yield:', q7)
+q8 = it.send(EMPTY)            # Send q7 stete, get q8
+print('Eighth yield: ', q8)
+
+try:
+    count = it.send(EMPTY)
+except StopIteration as e:
+    print('Count: ', e.value)
+
+
+# In[61]:
+
+
+# 下面的 tuple 定义了细胞的状态转换
+Transition = namedtuple('Traansition', ('y', 'x', 'state'))
+
+def game_logic(state, neighbors):
+    """
+    Paramsters
+    ----------
+    state: 当前细胞的状态, ALIVE or EMPTY
+    neighbors: 当前细胞的邻居细胞的存活数
+    """
+    if state == ALIVE:
+        if neighbors < 2 or neighbors > 3:
+            return EMPTY
+    else:
+        if neighbors == 3:
+            return ALIVE
+    return state
+
+# 委托生成器函数, 获取当前细胞及其邻居的状态, 生成细胞新的状态
+# yield from 处 生成 Query对象, 但是最后的yield 生成 Transition对象
+def step_cell(y, x):
+    print(f'当前细胞的坐标:{y}, {x}.')
+    state = yield Query(y, x)
+    print('当前细胞的状态为:', show_state(state))
+    print('下面接受当前细胞的邻居细胞们的状态.')
+    neighbors = yield from count_neighbors(y, x)
+    next_state = game_logic(state, neighbors)
+    yield Transition(y, x, next_state)
+
+# 委托生成器函数 对每个细胞调用 step_cell
+from itertools import product
+TICK = object()
+def simulate(height, width):
+    while True:
+        for y, x in product(range(height), range(width)):
+            yield from step_cell(y, x)
+        yield TICK
+
+
+# In[62]:
+
+
+it = step_cell(10, 5)
+q0 = it.__next__()
+print('第一次 yield:', q0)
+# 输入当前细胞的状态, 并且进入到yield from语句中, 生成邻居细胞Query
+q1 = it.send(ALIVE)
+print('第二次 yield:', q1)
+q2 = it.send(EMPTY)
+print('第三次 yield:', q2)
+it.close()
+
+
+# In[63]:
+
+
+# 下面的 Grid类表示了每个细胞的状态
+
+
+class Grid(object):
+    def __init__(self, height, width):
+        self.height = height
+        self.width = width
+
+        # 嵌套列表人rows初始化了每个格点上细胞的状态
+        self.rows = []
+        for _ in range(self.height):
+            self.rows.append([EMPTY] * self.width)
+
+    def __str__(self):
+        str_ = ''
+        for i in range(self.height):
+            for j in range(self.width):
+                str_ += self.query(i, j)
+            str_ += '\n'
+        return str_
+
+    def query(self, y, x):
+        return self.rows[y % self.height][x % self.width]
+
+    def assign(self, y, x, state):
+        assert state in (ALIVE, EMPTY), 'Wrong state!'
+        self.rows[y % self.height][x % self.width] = state
+
+
+# In[64]:
+
+
+grid = Grid(5, 9)
+grid.assign(0, 3, ALIVE)
+grid.assign(1, 4, ALIVE)
+grid.assign(2, 2, ALIVE)
+grid.assign(2, 3, ALIVE)
+grid.assign(2, 4, ALIVE)
+print(grid)
+
+
+# In[65]:
+
+
+# 这是最上层的调用方
+def live_a_generation(grid, sim):
+    """
+    Parameters
+    ----------
+    grid: Grid class, 代表了当前一代细胞的状态
+    sim: 委托生成器 simulator
+    
+    Returns
+    -------
+    返回下一代细胞状态的 Grid对象
+    """
+    progeny = Grid(grid.height, grid.width)
+    item = next(sim)
+    while item is not TICK:
+        if isinstance(item, Query):
+            # 当前生成的是Query对象, 获取其状态
+            state = grid.query(item.y, item.x)
+            item = sim.send(state)
+        else: 
+            # 生成的是 Transition 对象
+            # 说明 simulate 的内部循环中, `step_cell`生成器执行完毕, 下一次循环开始后需要重新激活.
+            progeny.assign(item.y, item.x, item.state)
+            item = next(sim)
+    # 如果 simulator生成了 TICK对象, 就说明 for 循环已经遍历全部的格子
+    return progeny
+
+
+# <center>简单总结</center>
+# 
+# 1. live_a_generation ---> simulator ---> step_cell ---> count_neighbors
+# 2. live_a_generation 完成了**细胞格子**的状态更新: Gird--> new Grid
+# 3. simulator 调用 height \* width 次子生成器函数, 生成每个细胞邻居的坐标, 并且通过 live_a_generation 传入邻居细胞的状态; 它也可能yield当前细胞的状态转换,
+#    这需要 live_a_generation中的逻辑判断.
+# 4. step_cell 是 simlulator中反复yield from的子生成器函数, 生成当前细胞的坐标, 接受当前细胞的状态, 然后调用 count_neighbors 生成当前细胞的邻居细胞的坐标, 获取其状态, 最后通过 game_logic 来yield 当前细胞的 Transition.
+# 5. Grid 类表示了一格细胞的状态
+# 
+
+# In[66]:
+
+
+# 最后 我们需要ColumnPrinter 类, 他负责打印若干代细胞格子而状态
+class ColumnPrinter(object):
+    def __init__(self):
+        self.height = 0
+        self.width = 0
+        self.string = []
+        self.times = 0
+    
+    def append(self, str_grid):
+        """
+        将一代细胞格子加入到字符串中
+        """
+        #第一代细胞格子初始化 string成员
+        if self.string == []:
+            self.string =str_grid.split('\n')
+            self.height = len(self.string) - 1
+            self.width = len(self.string[0])
+        else:
+            #以后的若干代细胞格子形状不能改变
+            str_grid_ = str_grid.split('\n')
+            height_ = len(str_grid_) - 1
+            width_ = len(str_grid_[0])
+            assert height_ == self.height
+            assert width_ == self.width
+            for i in range(self.height):
+                self.string[i] += '||'
+                self.string[i] += str_grid_[i]
+        self.times += 1
+    def __str__(self):
+        # head
+        head = ""
+        for i in range(self.width * self.times + (self.times - 1)):
+            number = int(i + (self.width+1)/2 + 1)
+            if (i+1) % (self.width + 1) == 0 and i > 0:
+                head += '|'
+            elif number % (self.width + 1) == 0:
+                head += str(int(number/self.width))
+            else:
+                head += ' '
+        # body
+        printer = head + '\n'
+        for i in range(self.height):
+            printer += (self.string[i] + '\n')
+        return printer           
+
+
+# In[67]:
+
+
+print(grid)
+
+
+# In[68]:
+
+
+colums = ColumnPrinter()
+sim = simulate(grid.height, grid.width)
+for i in range(5):
+    colums.append(str(grid))
+    grid = live_a_generation(grid, sim)
+
+
+# In[69]:
+
+
+print(colums)
 
 
 # In[ ]:

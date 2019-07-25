@@ -497,7 +497,7 @@ class DictionaryDB(object):
 # **因此, 创建类对象的过程可以委托给元类, 而无需再类里面定义new方法**
 
 # ###### \_\_new\_\_ 和 \_\_init\_\_ 的区别
-# 1. 如果new方法不反回对象就不会调用init函数
+# 1. 如果new方法不反回对象就不会调用init函数， new方法返回类的实例
 # 2. init是类实例化之后调用
 
 # In[7]:
@@ -741,9 +741,14 @@ class BetterSerializable(object):
 #registry字典: 类名字 : 类
 registry = {}
 def register_class(target_class):
+    """
+    Parameters
+    ----------
+    target_class : class, not a instance of class!
+    """
     registry[target_class.__name__] = target_class
 
-    def deserialize(data):
+def deserialize(data):
     params = json.loads(data)
     name = params['class']
     #从字典中取得需要解序列化的class
@@ -792,8 +797,9 @@ class Point3D(BetterSerializable):
 #解决方案,用meta class完成类的注册操作
 class Meta(type):
     def __new__(meta, name, bases, class_dict):
+        #首先生成class
         cls = type.__new__(meta, name, bases, class_dict)
-        #通过调用父类的__new__方法， 来完成 class的注册
+        #通过调用父类的__new__方法，来完成 class的注册
         register_class(cls)
         return cls
 class RegisterSerializable(BetterSerializable, metaclass = Meta):
@@ -820,33 +826,37 @@ print('After: ', deserialize(data))
 #3. 用meta class为类增加属性和方法
 
 
-# In[52]:
+# In[1]:
 
 
 #下面的customer class的每一个属性代表了数据库的一列
-#通过下面的 Field class, 可以为Customer class 增加一个受保护的属性
+#通过下面的 数据描述符, 可以为Customer class 增加一个受保护的属性
 #这一受保护的属性的名字为 _interval_name, 由用户定义！！！
 class Field(object):
     def __init__(self, name):
         self.name = name
         self.internal_name = '_' + self.name
+    
+    #get方法调用实例的`internel_name`属性
     def __get__(self, instance, isntance_type):
         if instance is None:
             return self
         print(instance.__class__.__name__, self.internal_name)
         return getattr(instance, self.internal_name, '')
+    
+    #set方法设置internal_name属性的值
     def __set__(self, instance, value):
         setattr(instance, self.internal_name, value)
 
 class Customer(object):
-    #类属性
+    #属性描述符
     first_name = Field('first_name')
     last_name = Field('last_name')
     prefix = Field('prefix')
     suffix = Field('suffix')
 
 
-# In[53]:
+# In[2]:
 
 
 #注意 调用 __get__和__set__的实例是 foo， 因此instance 是 foo
@@ -864,7 +874,7 @@ print('After:', repr(foo.first_name), foo.__dict__)
 """
     first_name = Field('first_name')
 """
-#解决方案, 用meta class + descriptors, 这样你可以不用上面的 weakref 模块了
+#解决方案, 用meta class + descriptors
 
 
 # In[82]:
@@ -872,7 +882,7 @@ print('After:', repr(foo.first_name), foo.__dict__)
 
 class Meta(type):
     def __new__(meta, name, bases, class_dict):
-       #class_dict是类的 属性名:属性 字典
+       #class_dict : 类属性的名字为键, 类属性为值
         for key, value in class_dict.items():
             #如果属性是Field类型,为其属性赋值
             if isinstance(value, Field):
@@ -907,6 +917,163 @@ foo = BetterCustomer()
 print('Before: ', repr(foo.first_name), foo.__dict__)
 foo.first_name = 'Euler'
 print('After: ', repr(foo.first_name), foo.__dict__)
+
+
+# ## 通过元类实现ORM
+
+# In[3]:
+
+
+#orm 将我们的类映射到数据库中的一张表.
+
+
+# In[6]:
+
+
+class Field(object):
+    pass
+
+
+# In[7]:
+
+
+class IntField(Field):
+    def __init__(self, db_column, min_value=None, max_value=None):
+        self.db_column = db_column
+        self._value = None
+        #我们略去类型和值检查
+        self.min_value = min_value
+        self.max_value = max_value
+    def __get__(self, instance, instance_type):
+        return self._value
+    def __set__(self, instance, value):
+        #我们略去类型和值检查
+        self._value = value
+
+
+# In[8]:
+
+
+class CharField(Field):
+    def __init__(self, db_column, max_length=None):
+        self.db_column = db_column
+        self.max_length = max_length
+        self._value = None
+    def __get__(self, instance, instance_type):
+        return self._value
+    def __set__(self, instance, value):
+        self._value = value
+
+
+# In[17]:
+
+
+class Meta(type):
+    def __new__(meta, name, bases, class_dict):
+        if name == 'Base':
+            return super().__new__(meta, name, bases, class_dict)
+        
+        #下面的逻辑是对User子类的
+        #new方法整理cls的类属性并且为它加入新的类属性
+        
+        #从 cls的类属性字典中, 取出类型为Field的属性
+        fields = {}
+        for key, value in class_dict.items():
+            if isinstance(value, Field):
+                fields[key] = value
+        #将 fields字典加入cls的属性字典中
+        class_dict['fields'] = fields
+        # 从cls中取出它内部定义的 Meta class
+        # 从Meta class 中取出 它的 db_table属性
+        attrs_meta = class_dict.get('Meta', None)
+        db_table = name.lower()
+        if attrs_meta is not None:
+            table = getattr(attrs_meta, 'db_table', None)
+            if table is not None:
+                db_table = table   
+        #将_meta加入到属性字典中
+        _meta = {}
+        _meta['tb_table'] = db_table
+        class_dict['_meta'] = _meta
+        del class_dict['Meta']
+        return super().__new__(meta, name, bases, class_dict)
+
+
+# In[35]:
+
+
+class Base(object, metaclass=Meta):
+    def __init__(self, *args, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+        return
+    def save(self):
+        pass
+        
+class User(Base):
+    name = CharField(db_column='a', max_length=10)
+    age = IntField(db_column='b', min_value=1, max_value=100)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    class Meta(object):
+        db_table = 'user'
+
+
+# In[21]:
+
+
+for key, value in User.__dict__.items():
+    print('{0} : {1}'.format(key, value))
+
+
+# ###### 注意 魔法方法访问顺序
+
+# In[71]:
+
+
+class Int(object):
+    def __init__(self, i):
+        self.i = i
+    def __get__(self, instance, instance_type):
+        return self.i
+    def __set__(self, instance, value):
+        print('Calling __set__.')
+        self.i = value
+
+
+# In[72]:
+
+
+class A(object):
+    a = 1
+    b = Int(1)
+    def __init__(self, c):
+        self.c = c
+
+
+# In[73]:
+
+
+instance = A(1)
+print(getattr(instance, 'a'))
+#给instance增加同名的实例属性
+instance.a = 3
+#此时调用 getattr会去取实例属性
+print(getattr(instance, 'a'))
+
+
+# In[74]:
+
+
+instance = A(1)
+print(getattr(instance, 'b'))
+#!!!!注意此时会调用数据描述符的set方法而不是产生新的属性！！！
+instance.b = 3
+#此时调用 getattr不会新加实例属性
+print(getattr(instance, 'b'))
+print(instance.__dict__)
+#如果非要新加一个同名的实例属性b, 可以直接调用实例的__dict__方法
 
 
 # In[ ]:
