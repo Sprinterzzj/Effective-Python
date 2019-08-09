@@ -1,5 +1,6 @@
 import asyncio
 import aiohttp
+from aiohttp import web
 
 import collections
 import tqdm
@@ -21,14 +22,14 @@ async def get_flag(session, base_url, cc):
     如果状态是404, 抛出 aiohttp.web.HTTPNotFound 异常;
     对于其他异常状态, 返回相应的 aiohttp.HttpProcessingError.
     """
-    url = '{}/{cc}{cc}.gif'.format(base_url, cc=cc.lower())
+    url = '{}/{cc}/{cc}.gif'.format(base_url, cc=cc.lower())
     async with session.get(url) as resp:
         if resp.status == 200:
             return await resp.read()
         elif resp.status == 404:
-            raise aiohttp.web.HTTPNotFound
+            raise web.HTTPNotFound()
         else:
-            raise aiohttp.HttpProcessingError(
+            raise aiohttp.errors.HttpProcessingError(
                           code=resp.status,
                           message=resp.version,
                           headers=resp.headers)
@@ -48,13 +49,20 @@ async def download_one(session, cc, base_url, semaphore, verbose):
     # 下面的部分处理了 get_flag 抛出的异常:
     #  1.对于 aiohttp.web.HTTPNotFound, 吞掉它.
     #  2.其他异常用 FetchError 异常类封装后向上抛出
-    except aiohttp.web.HTTPNotFound:
+    except web.HTTPNotFound:
         status = HTTPStatus.not_found
         msg = 'not found'
     except Exception as exc:
         # 注意这里的 raise X from Y 语法
         raise FetchError(cc) from exc
     else:
+        # !! 注意到 文件写入操作也是IO操作. 目前没有异步非阻塞写入文件的库函数... 因此他会阻塞事件循环
+        # 解决方案: asyncio.run_in_executor(...), 这是事件循环中的线程池
+        """
+        loop = asyncio.get_event_loop()
+        # run_in_executor(...) 的第一个参数接受一个executor的实例, 如果为None则会用默认的线程池
+        loop.run_in_executor(None, save_flag, image, cc.lower() + '.gif')
+        """
         save_flag(image, cc.lower() + '.gif')
         status = HTTPStatus.ok
         msg = 'OK'
