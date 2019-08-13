@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # <h1>Table of Contents<span class="tocSkip"></span></h1>
-# <div class="toc"><ul class="toc-item"><li><span><a href="#装饰器函数与装饰器类" data-toc-modified-id="装饰器函数与装饰器类-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>装饰器函数与装饰器类</a></span><ul class="toc-item"><li><span><a href="#装饰器函数" data-toc-modified-id="装饰器函数-1.1"><span class="toc-item-num">1.1&nbsp;&nbsp;</span>装饰器函数</a></span></li><li><span><a href="#装饰器类" data-toc-modified-id="装饰器类-1.2"><span class="toc-item-num">1.2&nbsp;&nbsp;</span>装饰器类</a></span></li></ul></li><li><span><a href="#使用装饰器的例子" data-toc-modified-id="使用装饰器的例子-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>使用装饰器的例子</a></span><ul class="toc-item"><li><span><a href="#classmethod" data-toc-modified-id="classmethod-2.1"><span class="toc-item-num">2.1&nbsp;&nbsp;</span>classmethod</a></span></li><li><span><a href="#staticmethod" data-toc-modified-id="staticmethod-2.2"><span class="toc-item-num">2.2&nbsp;&nbsp;</span>staticmethod</a></span></li><li><span><a href="#property" data-toc-modified-id="property-2.3"><span class="toc-item-num">2.3&nbsp;&nbsp;</span>property</a></span></li><li><span><a href="#deprecation-of-function" data-toc-modified-id="deprecation-of-function-2.4"><span class="toc-item-num">2.4&nbsp;&nbsp;</span>deprecation of function</a></span></li><li><span><a href="#WHILE-loop-removing-decorator" data-toc-modified-id="WHILE-loop-removing-decorator-2.5"><span class="toc-item-num">2.5&nbsp;&nbsp;</span>WHILE-loop removing decorator</a></span></li><li><span><a href="#plugin-registration-system" data-toc-modified-id="plugin-registration-system-2.6"><span class="toc-item-num">2.6&nbsp;&nbsp;</span>plugin registration system</a></span></li></ul></li><li><span><a href="#摘自-https://wiki.python.org/moin/PythonDecoratorLibrary" data-toc-modified-id="摘自-https://wiki.python.org/moin/PythonDecoratorLibrary-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>摘自 <a href="https://wiki.python.org/moin/PythonDecoratorLibrary" target="_blank">https://wiki.python.org/moin/PythonDecoratorLibrary</a></a></span><ul class="toc-item"><li><span><a href="#不使用-@wraps来保持原始函数的信息" data-toc-modified-id="不使用-@wraps来保持原始函数的信息-3.1"><span class="toc-item-num">3.1&nbsp;&nbsp;</span>不使用 @wraps来保持原始函数的信息</a></span></li><li><span><a href="#利用装饰器定义属性" data-toc-modified-id="利用装饰器定义属性-3.2"><span class="toc-item-num">3.2&nbsp;&nbsp;</span>利用装饰器定义属性</a></span></li><li><span><a href="#Memorize" data-toc-modified-id="Memorize-3.3"><span class="toc-item-num">3.3&nbsp;&nbsp;</span>Memorize</a></span></li><li><span><a href="#Alternate-memoize-as-nested-functions" data-toc-modified-id="Alternate-memoize-as-nested-functions-3.4"><span class="toc-item-num">3.4&nbsp;&nbsp;</span>Alternate memoize as nested functions</a></span></li><li><span><a href="#Alternate-memoize-as-dict-subclass" data-toc-modified-id="Alternate-memoize-as-dict-subclass-3.5"><span class="toc-item-num">3.5&nbsp;&nbsp;</span>Alternate memoize as dict subclass</a></span></li><li><span><a href="#Alternate-memoize-that-stores-cache-between-executions" data-toc-modified-id="Alternate-memoize-that-stores-cache-between-executions-3.6"><span class="toc-item-num">3.6&nbsp;&nbsp;</span>Alternate memoize that stores cache between executions</a></span></li><li><span><a href="#Cached-Properties" data-toc-modified-id="Cached-Properties-3.7"><span class="toc-item-num">3.7&nbsp;&nbsp;</span>Cached Properties</a></span></li><li><span><a href="#Retry" data-toc-modified-id="Retry-3.8"><span class="toc-item-num">3.8&nbsp;&nbsp;</span>Retry</a></span></li></ul></li></ul></div>
+# <div class="toc"><ul class="toc-item"><li><span><a href="#装饰器函数与装饰器类" data-toc-modified-id="装饰器函数与装饰器类-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>装饰器函数与装饰器类</a></span><ul class="toc-item"><li><span><a href="#装饰器函数" data-toc-modified-id="装饰器函数-1.1"><span class="toc-item-num">1.1&nbsp;&nbsp;</span>装饰器函数</a></span></li><li><span><a href="#装饰器类" data-toc-modified-id="装饰器类-1.2"><span class="toc-item-num">1.2&nbsp;&nbsp;</span>装饰器类</a></span></li></ul></li><li><span><a href="#使用装饰器的例子" data-toc-modified-id="使用装饰器的例子-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>使用装饰器的例子</a></span><ul class="toc-item"><li><span><a href="#classmethod" data-toc-modified-id="classmethod-2.1"><span class="toc-item-num">2.1&nbsp;&nbsp;</span>classmethod</a></span></li><li><span><a href="#staticmethod" data-toc-modified-id="staticmethod-2.2"><span class="toc-item-num">2.2&nbsp;&nbsp;</span>staticmethod</a></span></li><li><span><a href="#property" data-toc-modified-id="property-2.3"><span class="toc-item-num">2.3&nbsp;&nbsp;</span>property</a></span></li><li><span><a href="#deprecation-of-function" data-toc-modified-id="deprecation-of-function-2.4"><span class="toc-item-num">2.4&nbsp;&nbsp;</span>deprecation of function</a></span></li><li><span><a href="#WHILE-loop-removing-decorator" data-toc-modified-id="WHILE-loop-removing-decorator-2.5"><span class="toc-item-num">2.5&nbsp;&nbsp;</span>WHILE-loop removing decorator</a></span></li><li><span><a href="#plugin-registration-system" data-toc-modified-id="plugin-registration-system-2.6"><span class="toc-item-num">2.6&nbsp;&nbsp;</span>plugin registration system</a></span></li></ul></li><li><span><a href="#摘自-https://wiki.python.org/moin/PythonDecoratorLibrary" data-toc-modified-id="摘自-https://wiki.python.org/moin/PythonDecoratorLibrary-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>摘自 <a href="https://wiki.python.org/moin/PythonDecoratorLibrary" target="_blank">https://wiki.python.org/moin/PythonDecoratorLibrary</a></a></span><ul class="toc-item"><li><span><a href="#不使用-@wraps来保持原始函数的信息" data-toc-modified-id="不使用-@wraps来保持原始函数的信息-3.1"><span class="toc-item-num">3.1&nbsp;&nbsp;</span>不使用 @wraps来保持原始函数的信息</a></span></li><li><span><a href="#利用装饰器定义属性" data-toc-modified-id="利用装饰器定义属性-3.2"><span class="toc-item-num">3.2&nbsp;&nbsp;</span>利用装饰器定义属性</a></span></li><li><span><a href="#Memorize" data-toc-modified-id="Memorize-3.3"><span class="toc-item-num">3.3&nbsp;&nbsp;</span>Memorize</a></span></li><li><span><a href="#Alternate-memoize-as-nested-functions" data-toc-modified-id="Alternate-memoize-as-nested-functions-3.4"><span class="toc-item-num">3.4&nbsp;&nbsp;</span>Alternate memoize as nested functions</a></span></li><li><span><a href="#Alternate-memoize-as-dict-subclass" data-toc-modified-id="Alternate-memoize-as-dict-subclass-3.5"><span class="toc-item-num">3.5&nbsp;&nbsp;</span>Alternate memoize as dict subclass</a></span></li><li><span><a href="#Alternate-memoize-that-stores-cache-between-executions" data-toc-modified-id="Alternate-memoize-that-stores-cache-between-executions-3.6"><span class="toc-item-num">3.6&nbsp;&nbsp;</span>Alternate memoize that stores cache between executions</a></span></li><li><span><a href="#Cached-Properties" data-toc-modified-id="Cached-Properties-3.7"><span class="toc-item-num">3.7&nbsp;&nbsp;</span>Cached Properties</a></span></li><li><span><a href="#Retry" data-toc-modified-id="Retry-3.8"><span class="toc-item-num">3.8&nbsp;&nbsp;</span>Retry</a></span></li><li><span><a href="#Pseudo-curring" data-toc-modified-id="Pseudo-curring-3.9"><span class="toc-item-num">3.9&nbsp;&nbsp;</span>Pseudo-curring</a></span></li><li><span><a href="#Creating-decorator-with-optional-argument" data-toc-modified-id="Creating-decorator-with-optional-argument-3.10"><span class="toc-item-num">3.10&nbsp;&nbsp;</span>Creating decorator with optional argument</a></span></li><li><span><a href="#Controllable-DIY-debug" data-toc-modified-id="Controllable-DIY-debug-3.11"><span class="toc-item-num">3.11&nbsp;&nbsp;</span>Controllable DIY debug</a></span></li><li><span><a href="#Easy-adding-methods-to-a-class-instance" data-toc-modified-id="Easy-adding-methods-to-a-class-instance-3.12"><span class="toc-item-num">3.12&nbsp;&nbsp;</span>Easy adding methods to a class instance</a></span></li><li><span><a href="#Counting-function-calls" data-toc-modified-id="Counting-function-calls-3.13"><span class="toc-item-num">3.13&nbsp;&nbsp;</span>Counting function calls</a></span></li><li><span><a href="#Alternate-counting-function-calls" data-toc-modified-id="Alternate-counting-function-calls-3.14"><span class="toc-item-num">3.14&nbsp;&nbsp;</span>Alternate counting function calls</a></span></li><li><span><a href="#Generating-Deprecation-Warnings" data-toc-modified-id="Generating-Deprecation-Warnings-3.15"><span class="toc-item-num">3.15&nbsp;&nbsp;</span>Generating Deprecation Warnings</a></span></li><li><span><a href="#Smart-deprecation-warnings(with-valid-filenames,-line-number,-etc)" data-toc-modified-id="Smart-deprecation-warnings(with-valid-filenames,-line-number,-etc)-3.16"><span class="toc-item-num">3.16&nbsp;&nbsp;</span>Smart deprecation warnings(with valid filenames, line number, etc)</a></span></li><li><span><a href="#Ignoring-Deprecation-Warning" data-toc-modified-id="Ignoring-Deprecation-Warning-3.17"><span class="toc-item-num">3.17&nbsp;&nbsp;</span>Ignoring Deprecation Warning</a></span></li><li><span><a href="#Enable/Disable-Decorators" data-toc-modified-id="Enable/Disable-Decorators-3.18"><span class="toc-item-num">3.18&nbsp;&nbsp;</span>Enable/Disable Decorators</a></span></li><li><span><a href="#Easy-Dump-of-Function-Arguments" data-toc-modified-id="Easy-Dump-of-Function-Arguments-3.19"><span class="toc-item-num">3.19&nbsp;&nbsp;</span>Easy Dump of Function Arguments</a></span></li></ul></li></ul></div>
 
 # ##### 装饰器函数与装饰器类
 # ###### 装饰器函数
@@ -858,11 +858,400 @@ a.randint
 
 # ###### Retry
 
-# In[29]:
+# In[2]:
 
 
 import time 
 import math
+
+def retry(tries, delay=3, backoff=2):
+    """Retry a function or method until it returns True.
+    """
+    if backoff <= 1:
+        raise ValueError('backoff must be greater than 1.')
+    tries = math.floor(tries)
+    if tries < 0:
+        raise ValueError('tries must be 0 or greater.')
+    if delay <= 0:
+        raise ValueError('delay must be greater than 0.')
+    
+    def deco_retry(f):
+        def f_retry(*args, **kwargs):
+            mtries, mdelay = tries, delay
+            rv = f(*args, **kwargs)
+            while mtries >0:
+                if rv is True:
+                    return True
+                mtries -= 1
+                # wait
+                time.sleep(mdelay)
+                # make future wait longer
+                mdelay *= backoff
+                # try again
+                rv = f(*args, **kwargs)
+            return False
+        return f_retry # true decorator -> decorated function
+    return deco_retry # @retry(arg[, ...]) -> true decorator
+                
+
+
+# ###### Pseudo-curring
+
+# In[4]:
+
+
+class curried(object):
+    """Decorator that return a function that keeps returning 
+    functions until all arguments are supplied; then the orginal
+    function is evaluated.
+    """
+    def __init__(self, func, *args):
+        self.func = args
+        self.args = args
+    def __call__(self, *args):
+        args_ = self.args + args
+        # 如果 当前的非关键字参数 少于func中的关键字参数
+        # 就 递归地 return 一个 curried 对象
+        if len(args_) < self.func.__code__.co_argcount:
+            return curried(self.func, *args)
+        else:
+            return self.func(*args)            
+
+
+# ###### Creating decorator with optional argument
+
+# In[15]:
+
+
+import functools, inspect
+
+def decorator(func):
+    """Allow to use decorator either with arguments or not.
+    """
+    def isFuncArg(*args, **kwargs):
+        """判断参数是否只有一个, 且为(被装饰的)函数
+        """
+        return len(args) == 1 and len(kwargs) == 0        and (inspect.isfunction(args[0]) or isinstance(args[0], type))
+    
+    if isinstance(func, type):
+        def class_wrapper(*args, **kwargs):
+            if isFuncArg(*args, **kwargs):
+                return func()(*args, **kwargs) # create a cls before use
+            else:
+                return func(*args, **kwargs)
+        class_wrapper.__name__ = func.__name__
+        class_wrapper.__module__ = func.__module__
+        return class_wrapper
+    
+    else:
+        print('被装饰的对象是函数.')
+        @functools.wraps(func)
+        def func_wrapper(*args, **kwargs):
+            if isFuncArg(*args, **kwargs):
+                print('装饰了函数: ', (args, kwargs))
+                return func(*args, **kwargs)
+            else:
+                print('装饰了函数, 并且有参数: ', (args, kwargs))
+                def functor(userFunc):
+                    print(userFunc)
+                    return func(userFunc, *args, **kwargs)
+                return functor
+        return func_wrapper
+
+
+# In[16]:
+
+
+@decorator
+def apply(func, *args, **kwargs):
+    """执行被装饰的函数
+    """
+    return func(*args, **kwargs)
+
+
+# In[17]:
+
+
+@apply
+def test():
+    return 'test'
+
+
+# In[18]:
+
+
+@apply(2, 3)
+def test(a, b):
+    return a + b
+
+
+# ###### Controllable DIY debug
+
+# In[27]:
+
+
+import sys
+
+WHAT_TO_DEBUG = set(['io', 'core']) # change to what you need
+
+class debug(object):
+    """Decorator which helps to control what aspects of program
+    to debug on per-function basis. Aspects are provided as list
+    of arguments. It DOSEN'T slowdown functions which aren't 
+    supposed to be debugged.
+    """
+    def __init__(self, aspects=None):
+        self.aspects = set(aspects)
+    
+    def __call__(self, func):
+        if self.aspects and WHAT_TO_DEBUG:
+            def new_func(*args, **kwargs):
+                print(f'{func.__name__}, ({args}, {kwargs}).')
+                func_result = func(*args, **kwargs)
+                print(f'{func.__name__} returned {func_result}.')
+                return func_result
+            new_func.__doc__ = func.__doc__
+            return new_func
+        else:
+            return func
+
+
+# ###### Easy adding methods to a class instance
+
+# In[28]:
+
+
+import types
+def add_method(instance):
+    def decorator(func):
+        func = types.MethodType(func, instance)
+        setattr(instance, func.__name__, func)
+        return func
+    return decorator
+
+
+# In[32]:
+
+
+class Foo(object):
+    def __init__(self):
+        self.x = 42
+
+foo = Foo()
+
+@add_method(foo)
+def print_x(self):
+    print(self.x)
+
+foo.print_x()
+
+
+# ###### Counting function calls
+
+# In[34]:
+
+
+class countcalls(object):
+    """Decorator that keeps track of the number of time
+    a function is called.
+    """
+    __instances = {}
+    
+    def __init__(self, func):
+        self.__func = func
+        self.__numcalls = 0
+        # Register the instance
+        countcalls.__instances[func] = self
+    
+    def __call__(self, *args, **kwargs):
+        self.__numcalls += 1
+        return self.__func(*args, **kwargs)
+    
+    @staticmethod
+    def count(func):
+        return countcalls.__instances[func].__numcalls
+    @staticmethod
+    def counts():
+        return dict([(f, countcalls.count(f))                     for f in countcalls.__instances])
+
+
+# ###### Alternate counting function calls
+
+# In[36]:
+
+
+class countcalls(object):
+
+    __instances = {}
+
+    def __init__(self, func):
+        self.__func = func
+        self.__numcalls = 0
+        countcalls.__instances[func] = self
+
+    def __call__(self, *args, **kwargs):
+        self.__numcalls += 1
+        return self.__func(*args, **kwargs)
+
+    def count(self):
+        return countcalls.__instances[self.__func].__numcalls
+
+    @staticmethod
+    def counts():
+        return dict([
+            (f.__name__, countcalls.__instance[f].__numcalls)
+            for f in countcalls.__instances
+        ])
+
+
+# ###### Generating Deprecation Warnings
+
+# In[37]:
+
+
+import warnings
+
+
+def deprecated(func):
+    """This is a decorator which can be used to mark functions
+    as deprecated. It will result in warning being emitted
+    when the function is used.
+    """
+    def new_func(*args, **kwargs):
+        warnings.warn(
+            'Call to deprecated function {}.'.format(func.__name__),
+            category=DeprecationWarning)
+        return func(*args, **kwargs)
+    new_func.__name__ = func.__name__
+    new_func.__doc__ = func.__doc__
+    new_func.__dict__.update(func.__dict__)
+    return new_func
+
+
+# ###### Smart deprecation warnings(with valid filenames, line number, etc)
+
+# In[38]:
+
+
+import warnings
+import functools
+
+
+def deprecated(func):
+    
+    @functools.wraps(func)
+    def new_func(*args, **kwargs):
+        warnings.warn_explicit(
+            f'Call to deprecated function {func.__name__}.',
+            category=DeprecationWarning,
+            filename=func.__code__.co_filename,
+            lineno=func.__code__.co_firstlineno + 1
+        )
+        return func(*args, **kwargs)
+    return new_func
+
+
+# ###### Ignoring Deprecation Warning
+
+# In[40]:
+
+
+import warnings
+import functools
+
+
+def ignore_deprecation_warnings(func):
+    """This is a decorator which can be used to 
+    ignore deprecation warnings occurring in a function.
+    """
+    @functools.wraps(func)
+    def new_func(*args, **kwargs):
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore',
+                                    category=DeprecationWarning)
+            return func(*args, **kwargs)
+    return new_func
+
+
+# ###### Enable/Disable Decorators
+
+# In[45]:
+
+
+def unchanged(func):
+    """This decorator dosen't add any behavior.
+    """
+    return func
+def disabled(func):
+    """This decorator disables the provided function, and does nothing.
+    """
+    def empty_func(*args, **kwargs):
+        pass
+    return empty_func
+
+enabled  = unchanged
+
+
+# In[47]:
+
+
+GLOBAL_ENABLE_FLAG = True
+
+state = enabled if GLOBAL_ENABLE_FLAG else disabled
+
+@state
+def foo():
+    print('enabled.')
+
+
+# ###### Easy Dump of Function Arguments
+
+# In[85]:
+
+
+def dump_args(func):
+    """This decorator dumps out the arguments passed
+    to a function before calling it.
+    """
+    argnames = func.__code__.               co_varnames[:func.__code__.co_argcount]
+    fname = func.__name__
+    
+    def echo_func(*args, **kwargs):
+        all_args = {(arg_name, arg_value)                    for arg_name, arg_value in zip(argnames, args)}
+        all_args.update({(name, value)                         for name, value in kwargs.items()})
+        # print(all_args)
+        msg = f'{fname} : '
+        msg += ', '.join('%s=%r' % entry                         for entry in all_args)
+        print(msg)
+        return func(*args, **kwargs)
+    return echo_func
+
+
+# In[86]:
+
+
+def f(a, b, c):
+    print (a + b + c)
+
+
+# In[87]:
+
+
+f.__code__.co_argcount
+
+
+# In[88]:
+
+
+f.__code__.co_varnames
+
+
+# In[89]:
+
+
+@dump_args
+def func(a, b, c):
+    return a + b + c
 
 
 # In[ ]:
