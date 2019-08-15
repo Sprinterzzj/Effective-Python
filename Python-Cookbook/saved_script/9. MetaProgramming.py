@@ -607,7 +607,7 @@ except TypeError as e:
 
 # 实现单类
 
-# In[31]:
+# In[7]:
 
 
 class Singleton(type):
@@ -622,7 +622,7 @@ class Singleton(type):
             return self.__instance
 
 
-# In[33]:
+# In[8]:
 
 
 class Spam(object, metaclass=Singleton):

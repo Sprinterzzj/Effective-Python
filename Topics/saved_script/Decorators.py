@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # <h1>Table of Contents<span class="tocSkip"></span></h1>
-# <div class="toc"><ul class="toc-item"><li><span><a href="#装饰器函数与装饰器类" data-toc-modified-id="装饰器函数与装饰器类-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>装饰器函数与装饰器类</a></span><ul class="toc-item"><li><span><a href="#装饰器函数" data-toc-modified-id="装饰器函数-1.1"><span class="toc-item-num">1.1&nbsp;&nbsp;</span>装饰器函数</a></span></li><li><span><a href="#装饰器类" data-toc-modified-id="装饰器类-1.2"><span class="toc-item-num">1.2&nbsp;&nbsp;</span>装饰器类</a></span></li></ul></li><li><span><a href="#使用装饰器的例子" data-toc-modified-id="使用装饰器的例子-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>使用装饰器的例子</a></span><ul class="toc-item"><li><span><a href="#classmethod" data-toc-modified-id="classmethod-2.1"><span class="toc-item-num">2.1&nbsp;&nbsp;</span>classmethod</a></span></li><li><span><a href="#staticmethod" data-toc-modified-id="staticmethod-2.2"><span class="toc-item-num">2.2&nbsp;&nbsp;</span>staticmethod</a></span></li><li><span><a href="#property" data-toc-modified-id="property-2.3"><span class="toc-item-num">2.3&nbsp;&nbsp;</span>property</a></span></li><li><span><a href="#deprecation-of-function" data-toc-modified-id="deprecation-of-function-2.4"><span class="toc-item-num">2.4&nbsp;&nbsp;</span>deprecation of function</a></span></li><li><span><a href="#WHILE-loop-removing-decorator" data-toc-modified-id="WHILE-loop-removing-decorator-2.5"><span class="toc-item-num">2.5&nbsp;&nbsp;</span>WHILE-loop removing decorator</a></span></li><li><span><a href="#plugin-registration-system" data-toc-modified-id="plugin-registration-system-2.6"><span class="toc-item-num">2.6&nbsp;&nbsp;</span>plugin registration system</a></span></li></ul></li><li><span><a href="#摘自-https://wiki.python.org/moin/PythonDecoratorLibrary" data-toc-modified-id="摘自-https://wiki.python.org/moin/PythonDecoratorLibrary-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>摘自 <a href="https://wiki.python.org/moin/PythonDecoratorLibrary" target="_blank">https://wiki.python.org/moin/PythonDecoratorLibrary</a></a></span><ul class="toc-item"><li><span><a href="#不使用-@wraps来保持原始函数的信息" data-toc-modified-id="不使用-@wraps来保持原始函数的信息-3.1"><span class="toc-item-num">3.1&nbsp;&nbsp;</span>不使用 @wraps来保持原始函数的信息</a></span></li><li><span><a href="#利用装饰器定义属性" data-toc-modified-id="利用装饰器定义属性-3.2"><span class="toc-item-num">3.2&nbsp;&nbsp;</span>利用装饰器定义属性</a></span></li><li><span><a href="#Memorize" data-toc-modified-id="Memorize-3.3"><span class="toc-item-num">3.3&nbsp;&nbsp;</span>Memorize</a></span></li><li><span><a href="#Alternate-memoize-as-nested-functions" data-toc-modified-id="Alternate-memoize-as-nested-functions-3.4"><span class="toc-item-num">3.4&nbsp;&nbsp;</span>Alternate memoize as nested functions</a></span></li><li><span><a href="#Alternate-memoize-as-dict-subclass" data-toc-modified-id="Alternate-memoize-as-dict-subclass-3.5"><span class="toc-item-num">3.5&nbsp;&nbsp;</span>Alternate memoize as dict subclass</a></span></li><li><span><a href="#Alternate-memoize-that-stores-cache-between-executions" data-toc-modified-id="Alternate-memoize-that-stores-cache-between-executions-3.6"><span class="toc-item-num">3.6&nbsp;&nbsp;</span>Alternate memoize that stores cache between executions</a></span></li><li><span><a href="#Cached-Properties" data-toc-modified-id="Cached-Properties-3.7"><span class="toc-item-num">3.7&nbsp;&nbsp;</span>Cached Properties</a></span></li><li><span><a href="#Retry" data-toc-modified-id="Retry-3.8"><span class="toc-item-num">3.8&nbsp;&nbsp;</span>Retry</a></span></li><li><span><a href="#Pseudo-curring" data-toc-modified-id="Pseudo-curring-3.9"><span class="toc-item-num">3.9&nbsp;&nbsp;</span>Pseudo-curring</a></span></li><li><span><a href="#Creating-decorator-with-optional-argument" data-toc-modified-id="Creating-decorator-with-optional-argument-3.10"><span class="toc-item-num">3.10&nbsp;&nbsp;</span>Creating decorator with optional argument</a></span></li><li><span><a href="#Controllable-DIY-debug" data-toc-modified-id="Controllable-DIY-debug-3.11"><span class="toc-item-num">3.11&nbsp;&nbsp;</span>Controllable DIY debug</a></span></li><li><span><a href="#Easy-adding-methods-to-a-class-instance" data-toc-modified-id="Easy-adding-methods-to-a-class-instance-3.12"><span class="toc-item-num">3.12&nbsp;&nbsp;</span>Easy adding methods to a class instance</a></span></li><li><span><a href="#Counting-function-calls" data-toc-modified-id="Counting-function-calls-3.13"><span class="toc-item-num">3.13&nbsp;&nbsp;</span>Counting function calls</a></span></li><li><span><a href="#Alternate-counting-function-calls" data-toc-modified-id="Alternate-counting-function-calls-3.14"><span class="toc-item-num">3.14&nbsp;&nbsp;</span>Alternate counting function calls</a></span></li><li><span><a href="#Generating-Deprecation-Warnings" data-toc-modified-id="Generating-Deprecation-Warnings-3.15"><span class="toc-item-num">3.15&nbsp;&nbsp;</span>Generating Deprecation Warnings</a></span></li><li><span><a href="#Smart-deprecation-warnings(with-valid-filenames,-line-number,-etc)" data-toc-modified-id="Smart-deprecation-warnings(with-valid-filenames,-line-number,-etc)-3.16"><span class="toc-item-num">3.16&nbsp;&nbsp;</span>Smart deprecation warnings(with valid filenames, line number, etc)</a></span></li><li><span><a href="#Ignoring-Deprecation-Warning" data-toc-modified-id="Ignoring-Deprecation-Warning-3.17"><span class="toc-item-num">3.17&nbsp;&nbsp;</span>Ignoring Deprecation Warning</a></span></li><li><span><a href="#Enable/Disable-Decorators" data-toc-modified-id="Enable/Disable-Decorators-3.18"><span class="toc-item-num">3.18&nbsp;&nbsp;</span>Enable/Disable Decorators</a></span></li><li><span><a href="#Easy-Dump-of-Function-Arguments" data-toc-modified-id="Easy-Dump-of-Function-Arguments-3.19"><span class="toc-item-num">3.19&nbsp;&nbsp;</span>Easy Dump of Function Arguments</a></span></li></ul></li></ul></div>
+# <div class="toc"><ul class="toc-item"><li><span><a href="#装饰器函数与装饰器类" data-toc-modified-id="装饰器函数与装饰器类-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>装饰器函数与装饰器类</a></span><ul class="toc-item"><li><span><a href="#装饰器函数" data-toc-modified-id="装饰器函数-1.1"><span class="toc-item-num">1.1&nbsp;&nbsp;</span>装饰器函数</a></span></li><li><span><a href="#装饰器类" data-toc-modified-id="装饰器类-1.2"><span class="toc-item-num">1.2&nbsp;&nbsp;</span>装饰器类</a></span></li></ul></li><li><span><a href="#使用装饰器的例子" data-toc-modified-id="使用装饰器的例子-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>使用装饰器的例子</a></span><ul class="toc-item"><li><span><a href="#classmethod" data-toc-modified-id="classmethod-2.1"><span class="toc-item-num">2.1&nbsp;&nbsp;</span>classmethod</a></span></li><li><span><a href="#staticmethod" data-toc-modified-id="staticmethod-2.2"><span class="toc-item-num">2.2&nbsp;&nbsp;</span>staticmethod</a></span></li><li><span><a href="#property" data-toc-modified-id="property-2.3"><span class="toc-item-num">2.3&nbsp;&nbsp;</span>property</a></span></li><li><span><a href="#deprecation-of-function" data-toc-modified-id="deprecation-of-function-2.4"><span class="toc-item-num">2.4&nbsp;&nbsp;</span>deprecation of function</a></span></li><li><span><a href="#WHILE-loop-removing-decorator" data-toc-modified-id="WHILE-loop-removing-decorator-2.5"><span class="toc-item-num">2.5&nbsp;&nbsp;</span>WHILE-loop removing decorator</a></span></li><li><span><a href="#plugin-registration-system" data-toc-modified-id="plugin-registration-system-2.6"><span class="toc-item-num">2.6&nbsp;&nbsp;</span>plugin registration system</a></span></li></ul></li><li><span><a href="#摘自-https://wiki.python.org/moin/PythonDecoratorLibrary" data-toc-modified-id="摘自-https://wiki.python.org/moin/PythonDecoratorLibrary-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>摘自 <a href="https://wiki.python.org/moin/PythonDecoratorLibrary" target="_blank">https://wiki.python.org/moin/PythonDecoratorLibrary</a></a></span><ul class="toc-item"><li><span><a href="#不使用-@wraps来保持原始函数的信息" data-toc-modified-id="不使用-@wraps来保持原始函数的信息-3.1"><span class="toc-item-num">3.1&nbsp;&nbsp;</span>不使用 @wraps来保持原始函数的信息</a></span></li><li><span><a href="#利用装饰器定义属性" data-toc-modified-id="利用装饰器定义属性-3.2"><span class="toc-item-num">3.2&nbsp;&nbsp;</span>利用装饰器定义属性</a></span></li><li><span><a href="#Memorize" data-toc-modified-id="Memorize-3.3"><span class="toc-item-num">3.3&nbsp;&nbsp;</span>Memorize</a></span></li><li><span><a href="#Alternate-memoize-as-nested-functions" data-toc-modified-id="Alternate-memoize-as-nested-functions-3.4"><span class="toc-item-num">3.4&nbsp;&nbsp;</span>Alternate memoize as nested functions</a></span></li><li><span><a href="#Alternate-memoize-as-dict-subclass" data-toc-modified-id="Alternate-memoize-as-dict-subclass-3.5"><span class="toc-item-num">3.5&nbsp;&nbsp;</span>Alternate memoize as dict subclass</a></span></li><li><span><a href="#Alternate-memoize-that-stores-cache-between-executions" data-toc-modified-id="Alternate-memoize-that-stores-cache-between-executions-3.6"><span class="toc-item-num">3.6&nbsp;&nbsp;</span>Alternate memoize that stores cache between executions</a></span></li><li><span><a href="#Cached-Properties" data-toc-modified-id="Cached-Properties-3.7"><span class="toc-item-num">3.7&nbsp;&nbsp;</span>Cached Properties</a></span></li><li><span><a href="#Retry" data-toc-modified-id="Retry-3.8"><span class="toc-item-num">3.8&nbsp;&nbsp;</span>Retry</a></span></li><li><span><a href="#Pseudo-curring" data-toc-modified-id="Pseudo-curring-3.9"><span class="toc-item-num">3.9&nbsp;&nbsp;</span>Pseudo-curring</a></span></li><li><span><a href="#Creating-decorator-with-optional-argument" data-toc-modified-id="Creating-decorator-with-optional-argument-3.10"><span class="toc-item-num">3.10&nbsp;&nbsp;</span>Creating decorator with optional argument</a></span></li><li><span><a href="#Controllable-DIY-debug" data-toc-modified-id="Controllable-DIY-debug-3.11"><span class="toc-item-num">3.11&nbsp;&nbsp;</span>Controllable DIY debug</a></span></li><li><span><a href="#Easy-adding-methods-to-a-class-instance" data-toc-modified-id="Easy-adding-methods-to-a-class-instance-3.12"><span class="toc-item-num">3.12&nbsp;&nbsp;</span>Easy adding methods to a class instance</a></span></li><li><span><a href="#Counting-function-calls" data-toc-modified-id="Counting-function-calls-3.13"><span class="toc-item-num">3.13&nbsp;&nbsp;</span>Counting function calls</a></span></li><li><span><a href="#Alternate-counting-function-calls" data-toc-modified-id="Alternate-counting-function-calls-3.14"><span class="toc-item-num">3.14&nbsp;&nbsp;</span>Alternate counting function calls</a></span></li><li><span><a href="#Generating-Deprecation-Warnings" data-toc-modified-id="Generating-Deprecation-Warnings-3.15"><span class="toc-item-num">3.15&nbsp;&nbsp;</span>Generating Deprecation Warnings</a></span></li><li><span><a href="#Smart-deprecation-warnings(with-valid-filenames,-line-number,-etc)" data-toc-modified-id="Smart-deprecation-warnings(with-valid-filenames,-line-number,-etc)-3.16"><span class="toc-item-num">3.16&nbsp;&nbsp;</span>Smart deprecation warnings(with valid filenames, line number, etc)</a></span></li><li><span><a href="#Ignoring-Deprecation-Warning" data-toc-modified-id="Ignoring-Deprecation-Warning-3.17"><span class="toc-item-num">3.17&nbsp;&nbsp;</span>Ignoring Deprecation Warning</a></span></li><li><span><a href="#Enable/Disable-Decorators" data-toc-modified-id="Enable/Disable-Decorators-3.18"><span class="toc-item-num">3.18&nbsp;&nbsp;</span>Enable/Disable Decorators</a></span></li><li><span><a href="#Easy-Dump-of-Function-Arguments" data-toc-modified-id="Easy-Dump-of-Function-Arguments-3.19"><span class="toc-item-num">3.19&nbsp;&nbsp;</span>Easy Dump of Function Arguments</a></span></li><li><span><a href="#Pre-/Post--Conditions" data-toc-modified-id="Pre-/Post--Conditions-3.20"><span class="toc-item-num">3.20&nbsp;&nbsp;</span>Pre-/Post- Conditions</a></span></li><li><span><a href="#Profiling/Coverage-Analysis" data-toc-modified-id="Profiling/Coverage-Analysis-3.21"><span class="toc-item-num">3.21&nbsp;&nbsp;</span>Profiling/Coverage Analysis</a></span></li></ul></li></ul></div>
 
 # ##### 装饰器函数与装饰器类
 # ###### 装饰器函数
@@ -1254,8 +1254,324 @@ def func(a, b, c):
     return a + b + c
 
 
-# In[ ]:
+# ###### Pre-/Post- Conditions
+
+# In[41]:
 
 
+import types
+import itertools
+DEFAULT_ON = True
 
+
+class FunctionWrapper(object):
+    def __init__(self, precondition,
+                 postcondition, function):
+        self._pre = precondition
+        self._post = postcondition
+        self._func = function
+
+    def __call__(self, *args, **kwargs):
+        precondition = self._pre
+        postcondition = self._post
+
+        if precondition:
+            precondition(*args, **kwargs)
+        # 注意 _func 有可能是一个 FunctionWrapper 的实例,
+        # 所以这里可能是一个递归调用
+        result = self._func(*args, **kwargs)
+        if postcondition:
+            postcondition(result, *args, **kwargs)
+        return result
+
+
+class conditions(object):
+    __slots__ = ('__precondition', '__postcondition')
+
+    def __init__(self, pre, post,
+                 use_conditions=DEFAULT_ON):
+        if not use_conditions:
+            pre, post = None, None
+        self.__precondition = pre
+        self.__postcondition = post
+
+    def __call__(self, function):
+
+        pres = set((self.__precondition, ))
+        posts = set((self.__postcondition, ))
+
+        while isinstance(function, FunctionWrapper):
+            # 收集 pre 和 post conditions
+            # 注意这里用 set 来过滤掉完全相同的 pre/post conditions
+            pres.add(function._pre)
+            posts.add(function._post)
+            # while 循环直到拆包function到最后一层(获得被装饰的函数)
+            # 终止
+            function = function._func
+
+        # filter out None conditions and
+        # build pairs of pre and post conditions
+        for pre, post in itertools.zip_longest(pres, posts):
+            if pre or post:
+                function = FunctionWrapper(pre, post, function)
+        return function
+
+
+def precondition(precondition, use_conditions=DEFAULT_ON):
+    """precondition 检查函数的参数
+    """
+    return conditions(precondition, None, use_conditions)
+
+
+def postcondition(postcondition, use_conditions=DEFAULT_ON):
+    """post condition 检查函数的返回值
+    """
+    return conditions(None, postcondition, use_conditions)
+
+
+# ###### Profiling/Coverage Analysis
+
+# In[1]:
+
+
+import atexit
+import inspect
+import logging
+import os
+import re
+import sys
+
+# For profiling
+from profile import Profile
+import pstats
+
+# For timecall
+import timeit
+
+# # For hostsshot profiling (inaccurate!)
+# # not available in Python 3
+# try:
+#     import hotshot
+#     import hostshot.stats
+# except ImportError:
+#     hotshot = None
+
+# For trace.py
+import trace
+import dis
+import token
+import tokenize
+
+# # For hotshot coverage 
+# # (inaccurate!; uses undocumented APIs; might break)
+# # not available in Python 3
+# if hotshot is not None:
+#     import _hostshot
+#     import hostshot.log
+
+# For cProfile profiling (best)
+try:
+    import cProfile
+except ImportError:
+    cProfile = None
+
+
+# In[29]:
+
+
+# registry of available profilers
+AVAILABLE_PROFILERS = {}
+
+
+class FuncProfile(object):
+    """Profiler for a function (uses profile).
+    """
+    # This flag is shared between all instance
+    in_profiler = False
+
+    Profile_ = Profile
+
+    def __init__(self, func, skip=0, filename=None,
+                 immediate=False, dirs=False,
+                 sort=None, entries=40, stdout=True):
+        """Create a profiler for a function.
+        Every profiler has its own log file (the name of which 
+        is derived from the function name).
+        FuncProfile registers an atexit handler taht prints profiling
+        information to sys.stderr when the program terminates.
+        """
+        self.func = func
+        self.skip = skip
+        self.filename = filename
+        self._immediate = immediate
+        self.stdout = stdout
+        self.dirs = dirs
+        self.sort = sort or ('cumulative', 'time', 'call')
+        if isinstance(self.sort, str):
+            self.sort = (self.sort, )
+        self.entries = entries
+        self.reset_stats()
+        if not self.immediate:
+            # 用于程序结束时的回调函数
+            atexit.register(self.atexit)
+
+    @property
+    def immediate(self):
+        return self._immediate
+
+    def reset_stats(self):
+        """Reset accumulated profiler statistics.
+        """
+        self.stats = pstats.Stats(Profile())
+        self.ncalls = 0
+        self.skipped = 0
+
+    def print_stats(self):
+        """Print profil information to sys.stdout.
+        """
+        stats = self.stats
+        if self.filename:
+            stats.dump_stats(self.filename)
+        if self.stdout:
+            funcname = self.func.__name__
+            filename = self.func.__code__.co_filename
+            lineno = self.func.__code__.co_firstlineno
+            print("")
+            print('*** PROFILER RESULTS ***')
+            print(f'{funcname} ({filename}:{lineno})')
+            if self.skipped:
+                skipped = f'{self.skipped} calls not profiled.'
+            else:
+                skipped = 'without skipped.'
+            print(f'Function called {self.ncalls} times, ',
+                  skipped)
+            print('')
+            if not self.dirs:
+                stats.strip_dirs()
+            stats.sort_stats(*self.sort)
+            stats.print_stats(self.entries)
+
+    def atexit(self):
+        """Stop profiling and print profile information
+        to sys.stdout.
+        This function is registered as an atexit hook.
+        """
+        self.print_stats()
+
+    def __call__(self, *args, **kwargs):
+        """Profile a single call to the function.
+        """
+        self.ncalls += 1
+        if self.skip > 0:
+            print(self.skip)
+            self.skip -= 1
+            print(self.skip)
+            self.skipped += 1
+            return self.func(*args, **kwargs)
+        if FuncProfile.in_profiler:
+            # handle recursive calls
+            return self.func(*args, **kwargs)
+
+        profiler = self.Profile_()
+        try:
+            FuncProfile.in_profiler = True
+            return profiler.runcall(self.func, *args, **kwargs)
+        finally:
+            FuncProfile.in_profiler = False
+            self.stats.add(profiler)
+            if self.immediate:
+                self.print_stats()
+                self.reset_stats()
+
+
+AVAILABLE_PROFILERS['profile'] = FuncProfile
+
+
+# In[38]:
+
+
+# __all__ = ['coverage', 'coverage_with_hotshot',
+#            'profile', 'timecall']
+import functools
+def profile(func=None, skip=0, 
+            filename=None, immediate=False, 
+            dirs=False, sort=None, 
+            entries=40, stdout=True,
+            profiler=('cProfile', 'profile', 'hotshot')):
+    """Mark `func` for profiling.
+    
+    If `skip` is > 0, first `skip` calls to `func` will
+    not be profiled.
+    
+    If `immediate` is False, profiling results will be
+    printed to sys.stdout on program termination. Otherwise
+    results will be printed after each call. (If you don't
+    want this, set stdout=False and specify a `filename`
+    to store profile data.)
+    
+    If `dirs` is False only the name of the file will be
+    printed. Otherwise the full path is used.
+    
+    `sort` can be a list of sort keys (defaulting to ['cumulative',
+    'time', 'calls']).  The following ones are recognized::
+
+        'calls'      -- call count
+        'cumulative' -- cumulative time
+        'file'       -- file name
+        'line'       -- line number
+        'module'     -- file name
+        'name'       -- function name
+        'nfl'        -- name/file/line
+        'pcalls'     -- call count
+        'stdname'    -- standard name
+        'time'       -- internal time
+    
+    `entries` limites the output to the first N entries.
+    
+    `profiler` can be used to selected the preferred profiler,
+    or specify a sequence of them, in order of preference. The
+    default is 'cProfile', 'profile', 'hotshot').
+    
+    If `filename` is specified, the profile stats will be
+    stored in the named file. You can load then with 
+    pystats.Stats(filename) or use a visualization tool 
+    like RunSnakeRun.    
+    """
+    if func is None: # We are a decorator marker
+        def decorator(func):
+            return profile(func, skip=skip, 
+                           filename=filename, immediate=immediate,
+                           dirs=dirs, sort=sort,
+                           entries=entries, profiler=profiler,
+                           stdout=stdout)
+        return decorator
+    else: # We are a decorator
+        if isinstance(profiler, str):
+            profiler = [profiler]
+        
+        for p in profiler:
+            if p in AVAILABLE_PROFILERS:
+                profiler_class = AVAILABLE_PROFILERS[p]
+                break
+        else:
+            raise ValueError('Only these profilers are available: %s'                             % ', '.join(sorted(AVAILABLE_PROFILERS)))
+
+        if not profiler_class:
+            raise ValueError('The `profiler_class` is None.'
+                             'Please check `AVAILABLE_PROFILERS`.')
+        
+        func_profiler = profiler_class(func, skip=skip, 
+                                filename=filename,immediate=immediate, 
+                                dirs=dirs, sort=sort, 
+                                entries=entries, stdout=stdout)
+        @functools.wraps(func)
+        def new_func(*args, **kwargs):
+            return func_profiler(*args, **kwargs)
+        return new_func  
+
+
+if cProfile is not None:
+    class CProfileFuncProfile(FuncProfile):
+        Profile_ = cProfile.Profile
+    AVAILABLE_PROFILERS['cProfile'] = CProfileFuncProfile
 
