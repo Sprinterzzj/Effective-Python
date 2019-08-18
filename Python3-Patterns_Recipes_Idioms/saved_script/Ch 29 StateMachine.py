@@ -175,6 +175,10 @@ MouseTrap().runAll(map(MouseAction, moves))
 
 
 class StateT(State):
+    """状态机的节点类, 每个节点代表了陷阱的状态
+    输入: 老鼠的状态
+    输出: 陷阱的状态
+    """
     def __init__(self):
         self.transitions = None
 
@@ -212,7 +216,7 @@ class Luring(StateT):
                 MouseAction.enters: MouseTrap.trapping,
                 MouseAction.runsAway: MouseTrap.waiting
             }
-        return super().__init__(input_state)
+        return super().next(input_state)
 
 
 class Trapping(StateT):
@@ -226,7 +230,7 @@ class Trapping(StateT):
                 MouseAction.escapes: MouseTrap.waiting,
                 MouseAction.trapped: MouseTrap.holding
             }
-        return super().__init__(input_state)
+        return super().next(input_state)
 
 
 class Holding(StateT):
@@ -239,7 +243,7 @@ class Holding(StateT):
             self.transitions = {
                 MouseAction.removed: MouseTrap.waiting
             }
-        return super().__init__(input_state)
+        return super().next(input_state)
 
 
 class MouseTrap(StateMachine):
