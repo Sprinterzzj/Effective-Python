@@ -331,17 +331,17 @@ class A(object):
 # ###### 9.装饰器定义为类
 # ***你需要自己实现 \_\_call\_\_和 \_\_get\_\_ 方法***
 
-# In[252]:
+# In[23]:
 
 
 import types
 from functools import wraps
 import sys
+import inspect
 class Profiled(object):
     def __init__(self, func):
         wraps(func)(self)
-#         self.func = func
-#         self.func.__name__ = func.__name__
+        print(inspect.signature(self.__wrapped__))
         self.ncalls = 0
     def __call__(self, *args, **kwargs):
         self.ncalls += 1
@@ -349,7 +349,6 @@ class Profiled(object):
         #注意 args 的第一个参数 是 spam的实例化
         print(sys._getframe(0).f_locals['args'])
         return self.__wrapped__(*args, **kwargs)
-        # return self.func(*args, **kwargs)
     def __get__(self, instance, owner):
         if instance is None:
             return self
@@ -364,12 +363,11 @@ class Profiled(object):
             #接下来调用call方法的第一个参数就是 spam的实例了
             
             return types.MethodType(self, instance)
-            # return super().__get__(instance, owner)
 
 
 # 你可以在类外面或者里面使用 Profiled 装饰器
 
-# In[253]:
+# In[22]:
 
 
 @Profiled
@@ -377,16 +375,34 @@ def add(x, y):
     return x + y
 
 class spam(object):
+    # Profiled 是装饰器类, Profiled(bar) 是 Profiled的实例. 因而它是类方法.
+    # Profile初始化时, wrap了 bar 方法. ！！！注意 bar 是实例方法, 它的第一个
+    # 参数是 self!!!!!
+    
+    # 所以如果不提供 __get__ 方法, spam().bar 返回的是 Profiled 的实例, 
+    # spam().bar(3) 缺少了 self 参数!!!!
+    # 但是 spam().bar(spam(), 3) 就可以了。。。。
     @Profiled
     def bar(self, x):
         print('In bar :', (self, x))
-    
 
 
-# In[254]:
+# In[18]:
 
 
 spam.bar.__dict__
+
+
+# In[20]:
+
+
+a = spam()
+
+
+# In[21]:
+
+
+a.bar(a, 3)
 
 
 # In[255]:
@@ -629,6 +645,91 @@ class Spam(object, metaclass=Singleton):
     pass
 
 assert Spam() is Spam()
+
+
+# ###### 14. 捕捉类的启动顺序
+
+# In[20]:
+
+
+from collections import OrderedDict
+
+
+class Typed(object):
+    _excepted_type = type(None)
+
+    def __init__(self, name=None):
+        self._name = name
+
+    def __set__(self, instance, value):
+#         print(self._excepted_type)
+        if not isinstance(value, self._excepted_type):
+            raise TypeError('Expected ' + str(self._excepted_type))
+        instance.__dict__[self._name] = value
+
+
+class Integer(Typed):
+    _excepted_type = int
+
+
+class Float(Typed):
+    _excepted_type = float
+
+
+class String(Typed):
+    _excepted_type = str
+
+
+# In[21]:
+
+
+class OrderedMeta(type):
+    """用元类来捕捉描述符的定义顺序
+    """
+    @classmethod
+    def __prepare__(cls, class_name, bases):
+        """__prepare__函数返回一个 OrderDict,
+        然后所有类属性被加到这个OrderDict中.
+        """
+        return OrderedDict()
+    def __new__(cls, class_name, bases, class_dict):
+        d_ = dict(class_dict)
+        order = []
+        # 遍历 class_dict(这是OrderedDict的实例),
+        # 把 Typed 的描述符加入到按照顺序加入到 order中
+        # 更新字典(注意不能在 OrderedDict上更新)
+        for name, value in class_dict.items():
+            if isinstance(value, Typed):
+                value._name = name
+                order.append(name)
+        d_['_order'] = order
+        return super().__new__(cls, class_name, bases, d_)
+
+class Structure(object, metaclass=OrderedMeta):
+    def as_csv(self):
+        return ','.join(str(getattr(self, name))                        for name in self._order)
+
+
+# In[24]:
+
+
+class Stock(Structure):
+    name = String()
+    price = Float()
+    shares = Integer()
+
+    def __init__(self, name, shares, price):
+        self.name = name
+        self.shares = shares
+        self.price = price
+
+
+# In[25]:
+
+
+s = Stock('zzj', 100, 12.3)
+
+s.as_csv()
 
 
 # In[ ]:
