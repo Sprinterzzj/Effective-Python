@@ -331,7 +331,7 @@ class A(object):
 # ###### 9.装饰器定义为类
 # ***你需要自己实现 \_\_call\_\_和 \_\_get\_\_ 方法***
 
-# In[23]:
+# In[1]:
 
 
 import types
@@ -367,7 +367,7 @@ class Profiled(object):
 
 # 你可以在类外面或者里面使用 Profiled 装饰器
 
-# In[22]:
+# In[2]:
 
 
 @Profiled
@@ -387,16 +387,22 @@ class spam(object):
         print('In bar :', (self, x))
 
 
-# In[18]:
+# In[3]:
 
 
 spam.bar.__dict__
 
 
-# In[20]:
+# In[5]:
 
 
 a = spam()
+
+
+# In[6]:
+
+
+a.bar
 
 
 # In[21]:
@@ -730,6 +736,250 @@ class Stock(Structure):
 s = Stock('zzj', 100, 12.3)
 
 s.as_csv()
+
+
+# ###### 15. 定义有可选参数的元类
+
+# In[5]:
+
+
+# 你想定义一个元类, 允许使用它的类在定义时提供可选参数,
+# 这样可以控制或者配置类型的创建过程
+
+#你需要用强制关键字参数
+#并且需要同时提供__init__ 和 __new__ 方法, 并且需要提供对应的参数签名
+class MyMeta(type):
+
+    # Optional
+    @classmethod
+    def __prepare__(cls, class_name, bases, *,
+                    debug=False, synchronize=False):
+        # Do something here.
+        return super().__prepare__(class_name, bases)
+
+    # Required
+    def __new__(cls, class_name, bases, class_dict, *,
+                debug=False, synchronize=False):
+        return super().__new__(cls, class_name, bases, class_dict)
+
+    # Required
+    def __init__(cls, class_name, bases, class_dict, *,
+                 debug=False, synchronize=False):
+        super().__init__(class_name, bases, class_dict)
+
+
+# In[6]:
+
+
+# 使用
+class Spam(metaclass=MyMeta, debug=True, synchronize=False):
+    pass
+
+
+# ###### \*args 和 \*\*kwargs 的强制参数签名
+
+# In[10]:
+
+
+from inspect import Signature, Parameter
+
+# Make a signature for a func(x, y=42, *, z=None):
+params = [Parameter(name='x', 
+                    kind=Parameter.POSITIONAL_OR_KEYWORD),
+          Parameter(name='y', 
+                    kind=Parameter.POSITIONAL_OR_KEYWORD, 
+                    default=42),
+          Parameter(name='z', 
+                    kind=Parameter.KEYWORD_ONLY,
+                    default=None)
+         ]
+sig = Signature(parameters=params)
+
+print(sig)
+
+
+# In[11]:
+
+
+# 一旦你有了一个签名对象, 你可以使用它的 bind 方法很容易的
+# 将他绑定到 *args 和 **kwargs 中
+def func(*args, **kwargs):
+    bound_values = sig.bind(*args, **kwargs)
+    for name, value in bound_values.arguments.items():
+        print(f'{name} : {value}')
+
+func(1, 2, z=3)
+func(y=2, x=1)
+
+
+# 可以看出来，通过将签名和传递的参数绑定起来，可以强制函数调用遵循特定的规则，比如必填、默认、重复等等。
+
+# In[14]:
+
+
+#在看一个更加具体的例子
+
+from inspect import Signature, Parameter
+
+def make_sig(*names):
+    params = [Parameter(name=name, kind=Parameter.POSITIONAL_OR_KEYWORD)              for name in names]
+    return Signature(params)
+
+
+class Structure(object):
+    __signature__ = make_sig()
+    def __init__(self, *args, **kwargs):
+        bound_values = self.__signature__.bind(*args, **kwargs)
+        for name, value in bound_values.arguments.items():
+            setattr(self, name, value)
+
+
+# In[15]:
+
+
+#Example use
+class Stock(Structure):
+    __signature__ = make_sig('name', 'shares', 'price')
+
+class Point(Structure):
+    __signature__ = make_sig('x', 'y')
+
+
+# In[16]:
+
+
+import inspect
+print(inspect.signature(Stock))
+
+
+# 在我们需要构建通用函数库、编写装饰器或实现代理的时候，对于 \*args 和 \*\*kwargs 的使用是很普遍的。 但是，这样的函数有一个缺点就是当你想要实现自己的参数检验时，代码就会笨拙混乱。这时候我们可以通过一个签名对象来简化它。
+
+# In[20]:
+
+
+# 我们可以把 Structure 中的 __signature__ 挪到元类中构造
+class StructureMeta(type):
+    def __new__(cls, class_name, bases, class_dict):
+        class_dict['__signature__'] =             make_sig(*class_dict.get('_fields', []))
+        return super().__new__(cls, class_name, bases, class_dict)
+
+
+class Structure(object, metaclass=StructureMeta):
+    _fields = []
+
+    def __init__(self, *args, **kwargs):
+        bound_values = self.__signature__.bind(*args, **kwargs)
+        for name, value in bound_values.arguments.items():
+            setattr(self, name, value)
+
+
+class Stock(Structure):
+    _fields = ['name', 'shares', 'price']
+
+
+# In[21]:
+
+
+import inspect
+print(inspect.signature(Stock))
+
+
+# ###### 17. 在类上强制使用编程规约
+# 你的程序包含一个很大的类继承体系，你希望强制执行某些编程规约（或者代码诊断）来帮助程序员保持清醒。
+# 你可以自定义元类, 并且让它至于你的程序的最顶层。
+
+# In[23]:
+
+
+class NoMixedCaseMeta(type):
+    """这个元类控制了属性的命名风格
+    """
+    def __new__(cls, class_name, bases, class_dict):
+        for name in class_dict:
+            if name.lower() != name:
+                raise TypeError(f'Bad attribute name: {name}')
+        return super().__new__(cls, class_name, bases, class_dict)
+
+class Root(metaclass=NoMixedCaseMeta):
+    pass
+
+class A(Root):
+    def foo_bar(self):
+        pass
+# class B(Root):
+#     def fooBar(self):
+#         pass
+
+
+# In[ ]:
+
+
+#下面的元类用来检测重载方法, 保证子类和父类中他们有相同的签名
+
+from inspect import signature
+import logging
+
+
+class MatchSignaturesMeta(type):
+    def __new__(cls, class_name, bases, class_dict):
+        print('Run __new__.')
+        print(cls)
+        print(class_name)
+        print(bases)
+        print(class_dict)
+        return super().__new__(cls, class_name, bases, class_dict)
+
+    def __init__(cls, class_name, bases, class_dict):
+        print('Run __init__.')
+        print(cls)
+        print(class_name)
+        print(bases)
+        print(class_dict)
+        super().__init__(class_name, bases, class_dict)
+        #
+        sup = super(cls, cls)
+        print(sup)
+        for name, value in class_dict.items():
+            if name.startswith('_') or not callable(value):
+                continue
+            # Get the previous defination (if any) and
+            # compare the signatures
+            previous_func = getattr(sup, name, None)
+            if previous_func is not None:
+                previous_sig = signature(previous_func)
+                current_sig = signature(value)
+                if previous_sig != current_sig:
+                    logging.warning(
+                        f'Signature mismatch in {value.__qualname__}:'
+                        f'{previous_sig} != {current_sig}')
+
+
+# 在元类中选择重新定义 \_\_new\_\_() 方法还是 \_\_init\_\_() 方法取决于你想怎样使用结果类。 \_\_new\_\_() 方法在类创建之前被调用，通常用于通过某种方式（比如通过改变类字典的内容）修改类的定义。 而 \_\_init\_\_() 方法是在类被创建之后被调用，当你需要完整构建类对象的时候会很有用。
+
+# In[33]:
+
+
+class Root(object, metaclass=MatchSignaturesMeta):
+    pass
+
+
+# In[36]:
+
+
+class A(Root):
+    def foo(self, x, y):
+        pass
+
+    def spam(self, x, *, z):
+        pass
+
+# Class with redefined methods, but slightly different signatures
+class B(A):
+    def foo(self, a, b):
+        pass
+
+    def spam(self,x,z):
+        pass
 
 
 # In[ ]:

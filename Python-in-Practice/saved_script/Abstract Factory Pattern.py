@@ -2,14 +2,102 @@
 # coding: utf-8
 
 # ###### 抽象工厂 一个简单的例子
+# 1. 用来处理对象的创建. 
+# 2. 用户申请一个对象而不知道对象被哪个class创建. 
+# 3. 方便的解耦对象的使用和创建
+# 4. 工厂方法适合对象种类比较少的情况, 如果有许多种不同类型的对象需要创建, 使用抽象工厂模式. 在一个抽象工厂类里实现多个关联对象的创建
+
+# In[6]:
+
+
+class FrogWorldFactory(object):
+
+    class Frog(object):
+        """玩家类
+        """
+
+        def __init__(self):
+            self.name = name
+
+        def __str__(self):
+            return self.name
+
+        def interact_with(self, obstacle):
+            """玩家与环境交互
+            """
+            print(f'The Forg encounters {obstacle}'
+                  f'and {obstacle.action()}!')
+
+    class Bug(object):
+        """怪物类
+        """
+
+        def __str__(self):
+            return 'a bug'
+
+        def action(self):
+            return 'eats it'
+
+#     def __str__(self):
+#         return '\n\n\t----Frog World----'
+
+    @classmethod
+    def make_character(cls, player_name):
+        return cls.Frog(player_name)
+
+    @classmethod
+    def make_obstacle(cls):
+        return cls.Bug()
+
+
+class WizardWorldFactory(object):
+    class Wizard(object):
+        def __init__(self, name):
+            self.name = name
+
+        def __str__(self):
+            return self.name
+
+        def interact_with(self, obstacle):
+            print(f'The Wizard battles against {obstacle} and'
+                  f'{obstacle.action()}!!')
+
+    class Ork(object):
+        def __str__(self):
+            return 'an evil ork'
+
+        def action(self):
+            return 'kill it'
+
+    @classmethod
+    def make_character(cls, player_name):
+        return cls.Wizard(player_name)
+
+    @classmethod
+    def make_obstacle(cls):
+        return cls.Ork()
+
 
 # In[ ]:
 
 
+class GameEnvironment(object):
+    """根据不同类型玩家创建不同的角色和障碍 (游戏环境)
+    这里可以根据玩家的年龄
+    """
+    def __init__(self, player_age, player_name):
+        if player_age <=18:
+            factory = FrogWorldFactory
+        else:
+            factory = WizardWorldFactory
+        self.hero = factory.make_character(player_name)
+        self.obstacle = factory.make_obstacle()
+    
+    def play(self):
+        self.hero.interact_with(self.obstacle)
 
 
-
-# #### 抽象工厂
+# ##### 抽象工厂模式
 # 
 # 1. 用来生成复杂的对象
 # 2. 所生成的对象由其他对象"组装"
