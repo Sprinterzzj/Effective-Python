@@ -982,6 +982,465 @@ class B(A):
         pass
 
 
+# ###### 18. 以编程的方式定义类
+
+# In[7]:
+
+
+# 可以用函数 types.new_class() 来初始化新的类对象. 
+
+# Method
+def __init__(self, name, shares, price):
+    self.name = name
+    self.shares = shares
+    self.price = price
+
+def get_cost(self):
+    return self.shares * self.prices
+
+class_dict = {
+    '__init__' : __init__,
+    'cost': property(fget=get_cost)
+}
+
+import types
+import abc
+# 你需要提供:
+# 1. 类的名字
+# 2. 基类的元组
+# 3. 关键字参数
+# 4. 一个用成员变量填充类字典的回调函数, 该函数接受了 __prepare__ 方法返回的映射对象
+Stock = types.new_class(name='Stock', 
+                        bases=(object, ), 
+                        kwds={'metaclass' : abc.ABCMeta}, 
+                        exec_body=lambda namespace: namespace.update(class_dict))
+
+Stock.__module__ = __name__
+
+
+# In[10]:
+
+
+print(Stock.__dict__)
+
+print(type(Stock))
+
+
+# In[11]:
+
+
+# 当然对于简单的类可以用 namedtuple
+from collections import namedtuple
+Stock = namedtuple('Stock', ('name shares price'))
+
+
+# In[17]:
+
+
+# 也可以用 栈帧魔法 来创建类
+import operator
+import types
+import sys
+
+
+def named_tuple(class_name, field_names):
+    """
+    """
+    # Populate a dictionary of field property accessors.
+    # itemgetter: Return a callable object that fetches the given item(s) from its operand.
+    class_dict = {name: property(operator.itemgetter(i))
+                  for i, name in enumerate(field_names)}
+
+    # Make a __new__ function and add to the calss dict.
+    def __new__(cls, *args):
+        if len(args) != len(field_names):
+            raise TypeError(f'Expected {len(field_names)} arguments.')
+        return tuple.__new__(cls, args)
+    class_dict['__new__'] = __new__
+
+    # Make the class
+    cls = types.new_class(class_name, (tuple, ), {},
+                          lambda namespace: namespace.update(class_dict))
+
+    # Set the module to that of the caller
+    cls.__module__ = sys._getframe(1).f_globals['__name__']
+    return cls
+
+
+# ###### 19. 在定义的时候初始化类的成员
+
+# In[37]:
+
+
+import operator
+
+
+class StructTupleMeta(type):
+    """类 StructTupleMeta 获取到类属性 _fields 中的属性名字列表，然后将它们转换成相应的可访问特定元组槽的方法。
+       函数 operator.itemgetter() 创建一个访问器函数， 然后 property() 函数将其转换成一个属性。
+    """
+    def __new__(cls, *args, **kwargs):
+        print('Calling __new__  in `StructTupleMeta` class.')
+        return super().__new__(cls, *args, **kwargs)
+    def __init__(cls, *args, **kwargs):
+        print('Calling __init__ in `StructTupleMeta` class.')
+        if not hasattr(cls, '_field'):
+            raise KeyError
+        super().__init__(*args, **kwargs)
+        for i, name in enumerate(cls._field):
+            # 元组支持随机访问.....
+            # StructTuple 是 tuple 的子类, 调用 cls.name 后会触发 tuple 的随机访问
+            setattr(cls, name, property(operator.itemgetter(i)))
+
+
+class StructTuple(tuple, metaclass=StructTupleMeta):
+    _field = []
+    def __new__(cls, *args):
+        print('Calling __new__ in `StructTuple` class.')
+        if len(args) != len(cls._field):
+            raise ValueError(f'{len(cls._field)} arguments required.')
+        return super().__new__(cls, args)
+
+
+# In[38]:
+
+
+# 上面的代码可以用来定义基于tuple的数据结构
+class Stock(StructTuple):
+    _field = ['name', 'shares', 'prices']
+
+
+# In[39]:
+
+
+print(Stock.__dict__)
+# 使用
+s = Stock('ACME', 50, 100)
+
+
+# ###### 20. 利用函数注解实现方法重载
+
+# In[108]:
+
+
+import inspect
+import types
+
+
+class MultiMethod(object):
+    """Represents a single multimethod.
+    MultiMethod 实例通过构建从类型签名到函数的映射来收集方法。 
+    在这个构建过程中，函数注解被用来收集这些签名然后构建这个映射。 
+    这个过程在 MultiMethod.register() 方法中实现。 
+    这种映射的一个关键特点是对于多个方法，所有参数类型都必须要指定，否则就会报错。
+    """
+
+    def __init__(self, name):
+        self._methods = {}
+        self.__name__ = name
+
+    def register(self, method):
+        """Register a new method as a multimethod.
+        """
+        signature = inspect.signature(method)
+
+        # Build a type signature from the method's annotations.
+        types = []
+        for name, param in signature.parameters.items():
+            if name == 'self':
+                continue
+            if param.annotation is inspect.Parameter.empty:
+                raise TypeError(
+                    f'Argument {name} must be annotated with a type.')
+            if not isinstance(param.annotation, type):
+                raise TypeError(f'Argument {name} must be a type.')
+            
+            # 这里要考虑带默认值的关键字参数的情况
+            if param.default is not inspect.Parameter.empty:
+                self._methods[tuple(types)] = method
+            types.append(param.annotation)
+        self._methods[tuple(types)] = method
+
+    def __call__(self, *args):
+        """Call a method based on type signature of the arguments.
+        不能使用关键字参数 ->_->, 只能使用位置参数
+        """
+        # 第一个参数是 `instance`, 忽略它!!!
+        types = tuple(type(arg) for arg in args[1:])
+        method = self._methods.get(types, None)
+        if method:
+            return method(*args)
+        else:
+            raise TypeError(f'No matching method for types {types}.')
+    
+    def __get__(self, instance, instance_type):
+        """Descriptor method needed to make calls work in class.
+        """
+        if instance is not None:
+            return types.MethodType(self, instance)
+        else:
+            return self
+    
+    def __repr__(self):
+        return f'MultiMethod Instance \'{self.__name__}\' : {self._methods.keys()}.'
+
+
+# In[109]:
+
+
+class Spam(object):
+    def bar(self, a:int, b:int, c:float=4.5, d:int=4):
+        pass
+
+m = MultiMethod(Spam.__name__)
+m.register(Spam().bar)
+print(m)
+
+
+# In[110]:
+
+
+class MultiDict(dict):
+    """Special dictionary to build multimethods in a metaclass.
+    """
+    def __setitem__(self, key, value):
+        if key in self:
+            # If key already exists, it must be a multimethods or callable
+            # 除了上面这俩你也不会写其他的重名对象了
+            current_value = self[key]
+            if isinstance(current_value, MultiMethod):
+                current_value.register(value)
+            else:
+                # 我们在 `key` 不存在时没有直接创建一个 MultiMethod 的实例
+                # 因为他有可能没有重名的函数
+                mvalue = MultiMethod(key)
+                mvalue.register(current_value)
+                mvalue.register(value)
+                super().__setitem__(key, mvalue)
+        else:
+            super().__setitem__(key, value)
+
+
+class MultipleMeta(type):
+    """Metaclass that allows multiple dispatch of methods.
+    MutipleMeta 元类使用它的 __prepare__() 方法 来提供一个作为 MultiDict 实例的自定义字典。
+    这个跟普通字典不一样的是， MultiDict 会在元素被设置的时候检查是否已经存在，如果存在的话，重复的元素会在 MultiMethod 实例中合并。
+    """
+    def __new__(cls, class_name, bases, class_dict):
+        return super().__new__(cls, class_name, bases, class_dict)
+    
+    @classmethod
+    def __prepare__(cls, class_name, bases):
+        return MultiDict()
+
+
+# In[111]:
+
+
+# 使用: 
+
+class Spam(object, metaclass=MultipleMeta):
+    def bar(self, x:int, y:int):
+        print('Bar 1 : ', x, y)
+    def bar(self, s:str, n:int=0):
+        print('Bar 2 : ', s, n)
+    def foo(self):
+        pass
+    Item = object()
+
+print(Spam.__dict__)
+
+s = Spam()
+s.bar(1,2)
+s.bar('hello')
+s.bar('hello', 3)
+
+
+# 当然你也可以使用 **decorator**
+
+# In[121]:
+
+
+import types
+
+
+class multimethod(object):
+    def __init__(self, func):
+        self._methods = {}
+        self.__name__ = func.__name__
+        self._default = func
+
+    def match(self, *types):
+        def register(func):
+            # 获取 func 的默认关键字的个数
+            num_defaults = len(func.__defaults__) if func.__defaults__ else 0
+
+            # 下面的 for 循环处理带默认值的参数
+            for i in range(num_defaults + 1):
+                self._methods[types[: len(types) - i]] = func
+            return self
+        return register
+
+    def __call__(self, *args):
+        types = tuple(type(arg) for arg in args[1:])
+        method = self._methods.get(types, None)
+        if method:
+            return method(*args)
+        else:
+            return self._default(*args)
+
+    def __get__(self, isntance, instance_type):
+        if instance is not None:
+            return types.MethodType(self, instance)
+        else:
+            return self
+
+
+# In[124]:
+
+
+class Spam(object):
+    @multimethod
+    def bar(self, *args):
+        """Default method called if no match.
+        """
+        raise TypeError('No matching method for bar.')
+    
+    # 现在 bar 是描述符了
+    @bar.match(int, int)
+    def bar(self, x, y):
+        print('Bar 1 : ', x, y)
+    
+    @bar.match(str, int)
+    def bar(self, s, n=0):
+        print('Bar 2 : ', s, n)
+    
+
+
+# ###### 21. 避免重复的 property
+# 解决方案: 用 property 工厂函数
+
+# ###### 22. 定义上下文管理器的方法
+
+# In[126]:
+
+
+import time
+from contextlib import contextmanager
+
+@contextmanager
+def timethis(label):
+    start = time.time()
+    try:
+        yield
+    finally:
+        end = time.time()
+        print(f'{label} : {end - start}')
+        
+with timethis('counting'):
+    n = 10000000
+    while n > 0:
+        n -= 1
+
+
+# In[129]:
+
+
+@contextmanager
+def list_transaction(orig_list):
+    """对任何 orrig_list 的修改只能当所有代码运行完成并且不抛出异常的时候才会生效
+    """
+    working = list(orig_list)
+    print('进入 with 语句')
+    yield working
+    print('退出 with 语句')
+    orig_list[:] = working
+
+
+# In[131]:
+
+
+items = [1,2,3,4]
+with list_transaction(items) as working:
+    print('开始操作')
+    working.append(4)
+    working.append(5)
+    print('结束操作')
+
+print(items)
+
+
+# ###### 23. 在局部变量域中执行代码
+#  默认情况下，exec() 会在调用者局部和全局范围内执行代码。然而，在函数里面， 传递给 exec() 的局部范围是**拷贝实际局部变量组成的一个字典**。 因此，如果 exec() 如果执行了修改操作，这种修改后的结果对实际局部变量值是没有影响的。 
+
+# In[134]:
+
+
+def test():
+    a = 13
+    loc = locals()
+    exec('b = a + 1')
+    b = loc['b']
+    return b
+
+print(test())
+
+
+# In[139]:
+
+
+def test():
+    """当你调用 locals() 获取局部变量时，你获得的是传递给 exec() 的局部变量的一个引用。 
+    通过在代码执行后审查这个字典的值，那就能获取修改后的值了。
+    """
+    x = 0
+    loc = locals()
+    print('before : ', loc)
+    exec('x += 1')
+    print('after : ', loc)
+    print('x = ', x)
+    print('loc[\'x\'] = ', loc['x'])
+
+test()
+
+
+# In[141]:
+
+
+def test():
+    """在使用 locals() 的时候，你需要注意操作顺序。
+    每次它被调用的时候， locals() 会获取局部变量值中的值并覆盖字典中相应的变量。
+    """
+    x = 0
+    loc = locals()
+    print(loc)
+    exec('x += 1')
+    print(loc)
+    locals()
+    print(loc)
+
+test()
+
+
+# In[143]:
+
+
+def test():
+    """你可以使用你自己的字典，并将它传递给 exec()。
+    
+    """
+    a = 13
+    loc = {'a' : a}
+    glb = {}
+    exec('b = a + 1', glb, loc)
+    b = loc['b']
+    print(b)
+
+test()
+
+
+# ###### 24. 解析与分析 Python 源码
+
 # In[ ]:
 
 
