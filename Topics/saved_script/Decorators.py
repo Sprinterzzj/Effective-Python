@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # <h1>Table of Contents<span class="tocSkip"></span></h1>
-# <div class="toc"><ul class="toc-item"><li><span><a href="#装饰器函数与装饰器类" data-toc-modified-id="装饰器函数与装饰器类-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>装饰器函数与装饰器类</a></span><ul class="toc-item"><li><span><a href="#装饰器函数" data-toc-modified-id="装饰器函数-1.1"><span class="toc-item-num">1.1&nbsp;&nbsp;</span>装饰器函数</a></span></li><li><span><a href="#装饰器类" data-toc-modified-id="装饰器类-1.2"><span class="toc-item-num">1.2&nbsp;&nbsp;</span>装饰器类</a></span></li></ul></li><li><span><a href="#使用装饰器的例子" data-toc-modified-id="使用装饰器的例子-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>使用装饰器的例子</a></span><ul class="toc-item"><li><span><a href="#classmethod" data-toc-modified-id="classmethod-2.1"><span class="toc-item-num">2.1&nbsp;&nbsp;</span>classmethod</a></span></li><li><span><a href="#staticmethod" data-toc-modified-id="staticmethod-2.2"><span class="toc-item-num">2.2&nbsp;&nbsp;</span>staticmethod</a></span></li><li><span><a href="#property" data-toc-modified-id="property-2.3"><span class="toc-item-num">2.3&nbsp;&nbsp;</span>property</a></span></li><li><span><a href="#deprecation-of-function" data-toc-modified-id="deprecation-of-function-2.4"><span class="toc-item-num">2.4&nbsp;&nbsp;</span>deprecation of function</a></span></li><li><span><a href="#WHILE-loop-removing-decorator" data-toc-modified-id="WHILE-loop-removing-decorator-2.5"><span class="toc-item-num">2.5&nbsp;&nbsp;</span>WHILE-loop removing decorator</a></span></li><li><span><a href="#plugin-registration-system" data-toc-modified-id="plugin-registration-system-2.6"><span class="toc-item-num">2.6&nbsp;&nbsp;</span>plugin registration system</a></span></li></ul></li><li><span><a href="#摘自-https://wiki.python.org/moin/PythonDecoratorLibrary" data-toc-modified-id="摘自-https://wiki.python.org/moin/PythonDecoratorLibrary-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>摘自 <a href="https://wiki.python.org/moin/PythonDecoratorLibrary" target="_blank">https://wiki.python.org/moin/PythonDecoratorLibrary</a></a></span><ul class="toc-item"><li><span><a href="#不使用-@wraps来保持原始函数的信息" data-toc-modified-id="不使用-@wraps来保持原始函数的信息-3.1"><span class="toc-item-num">3.1&nbsp;&nbsp;</span>不使用 @wraps来保持原始函数的信息</a></span></li><li><span><a href="#利用装饰器定义属性" data-toc-modified-id="利用装饰器定义属性-3.2"><span class="toc-item-num">3.2&nbsp;&nbsp;</span>利用装饰器定义属性</a></span></li><li><span><a href="#Memorize" data-toc-modified-id="Memorize-3.3"><span class="toc-item-num">3.3&nbsp;&nbsp;</span>Memorize</a></span></li><li><span><a href="#Alternate-memoize-as-nested-functions" data-toc-modified-id="Alternate-memoize-as-nested-functions-3.4"><span class="toc-item-num">3.4&nbsp;&nbsp;</span>Alternate memoize as nested functions</a></span></li><li><span><a href="#Alternate-memoize-as-dict-subclass" data-toc-modified-id="Alternate-memoize-as-dict-subclass-3.5"><span class="toc-item-num">3.5&nbsp;&nbsp;</span>Alternate memoize as dict subclass</a></span></li><li><span><a href="#Alternate-memoize-that-stores-cache-between-executions" data-toc-modified-id="Alternate-memoize-that-stores-cache-between-executions-3.6"><span class="toc-item-num">3.6&nbsp;&nbsp;</span>Alternate memoize that stores cache between executions</a></span></li><li><span><a href="#Cached-Properties" data-toc-modified-id="Cached-Properties-3.7"><span class="toc-item-num">3.7&nbsp;&nbsp;</span>Cached Properties</a></span></li><li><span><a href="#Retry" data-toc-modified-id="Retry-3.8"><span class="toc-item-num">3.8&nbsp;&nbsp;</span>Retry</a></span></li><li><span><a href="#Pseudo-curring" data-toc-modified-id="Pseudo-curring-3.9"><span class="toc-item-num">3.9&nbsp;&nbsp;</span>Pseudo-curring</a></span></li><li><span><a href="#Creating-decorator-with-optional-argument" data-toc-modified-id="Creating-decorator-with-optional-argument-3.10"><span class="toc-item-num">3.10&nbsp;&nbsp;</span>Creating decorator with optional argument</a></span></li><li><span><a href="#Controllable-DIY-debug" data-toc-modified-id="Controllable-DIY-debug-3.11"><span class="toc-item-num">3.11&nbsp;&nbsp;</span>Controllable DIY debug</a></span></li><li><span><a href="#Easy-adding-methods-to-a-class-instance" data-toc-modified-id="Easy-adding-methods-to-a-class-instance-3.12"><span class="toc-item-num">3.12&nbsp;&nbsp;</span>Easy adding methods to a class instance</a></span></li><li><span><a href="#Counting-function-calls" data-toc-modified-id="Counting-function-calls-3.13"><span class="toc-item-num">3.13&nbsp;&nbsp;</span>Counting function calls</a></span></li><li><span><a href="#Alternate-counting-function-calls" data-toc-modified-id="Alternate-counting-function-calls-3.14"><span class="toc-item-num">3.14&nbsp;&nbsp;</span>Alternate counting function calls</a></span></li><li><span><a href="#Generating-Deprecation-Warnings" data-toc-modified-id="Generating-Deprecation-Warnings-3.15"><span class="toc-item-num">3.15&nbsp;&nbsp;</span>Generating Deprecation Warnings</a></span></li><li><span><a href="#Smart-deprecation-warnings(with-valid-filenames,-line-number,-etc)" data-toc-modified-id="Smart-deprecation-warnings(with-valid-filenames,-line-number,-etc)-3.16"><span class="toc-item-num">3.16&nbsp;&nbsp;</span>Smart deprecation warnings(with valid filenames, line number, etc)</a></span></li><li><span><a href="#Ignoring-Deprecation-Warning" data-toc-modified-id="Ignoring-Deprecation-Warning-3.17"><span class="toc-item-num">3.17&nbsp;&nbsp;</span>Ignoring Deprecation Warning</a></span></li><li><span><a href="#Enable/Disable-Decorators" data-toc-modified-id="Enable/Disable-Decorators-3.18"><span class="toc-item-num">3.18&nbsp;&nbsp;</span>Enable/Disable Decorators</a></span></li><li><span><a href="#Easy-Dump-of-Function-Arguments" data-toc-modified-id="Easy-Dump-of-Function-Arguments-3.19"><span class="toc-item-num">3.19&nbsp;&nbsp;</span>Easy Dump of Function Arguments</a></span></li><li><span><a href="#Pre-/Post--Conditions" data-toc-modified-id="Pre-/Post--Conditions-3.20"><span class="toc-item-num">3.20&nbsp;&nbsp;</span>Pre-/Post- Conditions</a></span></li><li><span><a href="#Profiling/Coverage-Analysis" data-toc-modified-id="Profiling/Coverage-Analysis-3.21"><span class="toc-item-num">3.21&nbsp;&nbsp;</span>Profiling/Coverage Analysis</a></span></li></ul></li></ul></div>
+# <div class="toc"><ul class="toc-item"><li><span><a href="#装饰器函数与装饰器类" data-toc-modified-id="装饰器函数与装饰器类-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>装饰器函数与装饰器类</a></span><ul class="toc-item"><li><span><a href="#装饰器函数" data-toc-modified-id="装饰器函数-1.1"><span class="toc-item-num">1.1&nbsp;&nbsp;</span>装饰器函数</a></span></li><li><span><a href="#装饰器类" data-toc-modified-id="装饰器类-1.2"><span class="toc-item-num">1.2&nbsp;&nbsp;</span>装饰器类</a></span></li></ul></li><li><span><a href="#使用装饰器的例子" data-toc-modified-id="使用装饰器的例子-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>使用装饰器的例子</a></span><ul class="toc-item"><li><span><a href="#classmethod" data-toc-modified-id="classmethod-2.1"><span class="toc-item-num">2.1&nbsp;&nbsp;</span>classmethod</a></span></li><li><span><a href="#staticmethod" data-toc-modified-id="staticmethod-2.2"><span class="toc-item-num">2.2&nbsp;&nbsp;</span>staticmethod</a></span></li><li><span><a href="#property" data-toc-modified-id="property-2.3"><span class="toc-item-num">2.3&nbsp;&nbsp;</span>property</a></span></li><li><span><a href="#deprecation-of-function" data-toc-modified-id="deprecation-of-function-2.4"><span class="toc-item-num">2.4&nbsp;&nbsp;</span>deprecation of function</a></span></li><li><span><a href="#WHILE-loop-removing-decorator" data-toc-modified-id="WHILE-loop-removing-decorator-2.5"><span class="toc-item-num">2.5&nbsp;&nbsp;</span>WHILE-loop removing decorator</a></span></li><li><span><a href="#plugin-registration-system" data-toc-modified-id="plugin-registration-system-2.6"><span class="toc-item-num">2.6&nbsp;&nbsp;</span>plugin registration system</a></span></li></ul></li><li><span><a href="#摘自-https://wiki.python.org/moin/PythonDecoratorLibrary" data-toc-modified-id="摘自-https://wiki.python.org/moin/PythonDecoratorLibrary-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>摘自 <a href="https://wiki.python.org/moin/PythonDecoratorLibrary" target="_blank">https://wiki.python.org/moin/PythonDecoratorLibrary</a></a></span><ul class="toc-item"><li><span><a href="#不使用-@wraps来保持原始函数的信息" data-toc-modified-id="不使用-@wraps来保持原始函数的信息-3.1"><span class="toc-item-num">3.1&nbsp;&nbsp;</span>不使用 @wraps来保持原始函数的信息</a></span></li><li><span><a href="#利用装饰器定义属性" data-toc-modified-id="利用装饰器定义属性-3.2"><span class="toc-item-num">3.2&nbsp;&nbsp;</span>利用装饰器定义属性</a></span></li><li><span><a href="#Memorize" data-toc-modified-id="Memorize-3.3"><span class="toc-item-num">3.3&nbsp;&nbsp;</span>Memorize</a></span></li><li><span><a href="#Alternate-memoize-as-nested-functions" data-toc-modified-id="Alternate-memoize-as-nested-functions-3.4"><span class="toc-item-num">3.4&nbsp;&nbsp;</span>Alternate memoize as nested functions</a></span></li><li><span><a href="#Alternate-memoize-as-dict-subclass" data-toc-modified-id="Alternate-memoize-as-dict-subclass-3.5"><span class="toc-item-num">3.5&nbsp;&nbsp;</span>Alternate memoize as dict subclass</a></span></li><li><span><a href="#Alternate-memoize-that-stores-cache-between-executions" data-toc-modified-id="Alternate-memoize-that-stores-cache-between-executions-3.6"><span class="toc-item-num">3.6&nbsp;&nbsp;</span>Alternate memoize that stores cache between executions</a></span></li><li><span><a href="#Cached-Properties" data-toc-modified-id="Cached-Properties-3.7"><span class="toc-item-num">3.7&nbsp;&nbsp;</span>Cached Properties</a></span></li><li><span><a href="#Retry" data-toc-modified-id="Retry-3.8"><span class="toc-item-num">3.8&nbsp;&nbsp;</span>Retry</a></span></li><li><span><a href="#Pseudo-curring" data-toc-modified-id="Pseudo-curring-3.9"><span class="toc-item-num">3.9&nbsp;&nbsp;</span>Pseudo-curring</a></span></li><li><span><a href="#Creating-decorator-with-optional-argument" data-toc-modified-id="Creating-decorator-with-optional-argument-3.10"><span class="toc-item-num">3.10&nbsp;&nbsp;</span>Creating decorator with optional argument</a></span></li><li><span><a href="#Controllable-DIY-debug" data-toc-modified-id="Controllable-DIY-debug-3.11"><span class="toc-item-num">3.11&nbsp;&nbsp;</span>Controllable DIY debug</a></span></li><li><span><a href="#Easy-adding-methods-to-a-class-instance" data-toc-modified-id="Easy-adding-methods-to-a-class-instance-3.12"><span class="toc-item-num">3.12&nbsp;&nbsp;</span>Easy adding methods to a class instance</a></span></li><li><span><a href="#Counting-function-calls" data-toc-modified-id="Counting-function-calls-3.13"><span class="toc-item-num">3.13&nbsp;&nbsp;</span>Counting function calls</a></span></li><li><span><a href="#Alternate-counting-function-calls" data-toc-modified-id="Alternate-counting-function-calls-3.14"><span class="toc-item-num">3.14&nbsp;&nbsp;</span>Alternate counting function calls</a></span></li><li><span><a href="#Generating-Deprecation-Warnings" data-toc-modified-id="Generating-Deprecation-Warnings-3.15"><span class="toc-item-num">3.15&nbsp;&nbsp;</span>Generating Deprecation Warnings</a></span></li><li><span><a href="#Smart-deprecation-warnings(with-valid-filenames,-line-number,-etc)" data-toc-modified-id="Smart-deprecation-warnings(with-valid-filenames,-line-number,-etc)-3.16"><span class="toc-item-num">3.16&nbsp;&nbsp;</span>Smart deprecation warnings(with valid filenames, line number, etc)</a></span></li><li><span><a href="#Ignoring-Deprecation-Warning" data-toc-modified-id="Ignoring-Deprecation-Warning-3.17"><span class="toc-item-num">3.17&nbsp;&nbsp;</span>Ignoring Deprecation Warning</a></span></li><li><span><a href="#Enable/Disable-Decorators" data-toc-modified-id="Enable/Disable-Decorators-3.18"><span class="toc-item-num">3.18&nbsp;&nbsp;</span>Enable/Disable Decorators</a></span></li><li><span><a href="#Easy-Dump-of-Function-Arguments" data-toc-modified-id="Easy-Dump-of-Function-Arguments-3.19"><span class="toc-item-num">3.19&nbsp;&nbsp;</span>Easy Dump of Function Arguments</a></span></li><li><span><a href="#Pre-/Post--Conditions" data-toc-modified-id="Pre-/Post--Conditions-3.20"><span class="toc-item-num">3.20&nbsp;&nbsp;</span>Pre-/Post- Conditions</a></span></li><li><span><a href="#Profiling/Coverage-Analysis" data-toc-modified-id="Profiling/Coverage-Analysis-3.21"><span class="toc-item-num">3.21&nbsp;&nbsp;</span>Profiling/Coverage Analysis</a></span></li><li><span><a href="#Line-Tracing-Individual-Functions" data-toc-modified-id="Line-Tracing-Individual-Functions-3.22"><span class="toc-item-num">3.22&nbsp;&nbsp;</span>Line Tracing Individual Functions</a></span></li><li><span><a href="#Synchronization" data-toc-modified-id="Synchronization-3.23"><span class="toc-item-num">3.23&nbsp;&nbsp;</span>Synchronization</a></span></li><li><span><a href="#Type-Enforcement-(accepts/returns)" data-toc-modified-id="Type-Enforcement-(accepts/returns)-3.24"><span class="toc-item-num">3.24&nbsp;&nbsp;</span>Type Enforcement (accepts/returns)</a></span></li><li><span><a href="#CGI-method-wrapper(略)" data-toc-modified-id="CGI-method-wrapper(略)-3.25"><span class="toc-item-num">3.25&nbsp;&nbsp;</span>CGI method wrapper(略)</a></span></li><li><span><a href="#State-Machine-Implementation" data-toc-modified-id="State-Machine-Implementation-3.26"><span class="toc-item-num">3.26&nbsp;&nbsp;</span>State Machine Implementation</a></span></li></ul></li></ul></div>
 
 # ##### 装饰器函数与装饰器类
 # ###### 装饰器函数
@@ -1376,7 +1376,7 @@ except ImportError:
     cProfile = None
 
 
-# In[29]:
+# In[2]:
 
 
 # registry of available profilers
@@ -1487,7 +1487,7 @@ class FuncProfile(object):
 AVAILABLE_PROFILERS['profile'] = FuncProfile
 
 
-# In[38]:
+# In[3]:
 
 
 # __all__ = ['coverage', 'coverage_with_hotshot',
@@ -1574,4 +1574,303 @@ if cProfile is not None:
     class CProfileFuncProfile(FuncProfile):
         Profile_ = cProfile.Profile
     AVAILABLE_PROFILERS['cProfile'] = CProfileFuncProfile
+
+
+# In[4]:
+
+
+class TraceFuncCoverage(object):
+    """Coverage analysis for a function (use trace module)
+    """
+
+    # Shared between all instances so that nested calls work
+    tracer = trace.Trace(count=True, trace=True,
+                         ignoredirs=[sys.prefix, sys.exec_prefix])
+
+    # This flag is also shared between all instances
+    tracing = False
+
+    def __init__(self, func):
+        """Create a profiler for a function.
+        Every profiler has its own log file (the name of which is derived from the function name).
+        TraceFuncCoverage registers an atexit hander that prints profiling information to sys.stderr
+        when the program terminates.
+        The log file is not removed and remains there to clutter the current working directory.
+        """
+        self.func = func
+        self.logfilename = f'{func.__name__}.{os.getpid()}.cprof'
+        self.ncalls = 0
+        atexit.register(self.atexit)
+
+    def __call__(self, *args, **kwargs):
+        """Profile a singe call to the function.
+        """
+        self.ncalls += 1
+        if TraceFuncCoverage.tracing:  # pragma: nocover
+            return self.func(*args, **kwargs)
+        old_trace = sys.gettrace()
+        try:
+            TraceFuncCoverage.tracing = True
+            return self.tracer.runfunc(self.func, *args, **kwargs)
+        finally:  # progma: nocover
+            sys.settrace(old_trace)
+            TraceFuncCoverage.tracing = False
+
+    def atexit(self):
+        """Stop profiling and print profile information to sys.stderr
+        This function is registered as an atexit hook.
+        """
+        funcname = self.func.__name__
+        filename = self.func.__name__.co_filename
+        lineno = self.func.__name__.co_firstlineno
+        print('')
+        print('***COVERAGE RESULT***')
+        print(f'{funcname} ({filename} : {lineno})')
+        print(f'Function called {self.ncalls} times.')
+        print('')
+
+        # TO DO: 实现 FuncSource 类
+        function_source = FuncSource(self.func)
+        for (filename, lineno), count in self.tracer.counts.items():
+            if filename != function_source.filename:
+                continue
+            function_source.mark(lineno, count)
+        print(function_source)
+        never_executed = function_source.count_never_executed()
+        if never_executed:
+            print(f'{never_executed} lines were not executed.')
+
+
+class FuncSource(object):
+    pass
+
+
+# ###### Line Tracing Individual Functions
+
+# In[13]:
+
+
+import sys
+import os
+import linecache
+
+
+def trace(func):
+    def globaltrace(frame, why, arg):
+        if why == 'call':
+            return localtrace
+        else:
+            return None
+
+    def localtrace(frame, why, arg):
+        if why == 'line':
+            # record the file name and line number of every trace
+            filename = frame.f_code.co_filename
+            # 函数最后一行
+            lineno = frame.f_lineno
+
+            basename = os.path.basename(filename)
+            print(f'{basename}({lineno}) '
+                  f': {linecache.getline(filename, lineno)}')
+        return localtrace
+
+    def _func(*args, **kwargs):
+        sys.settrace(globaltrace)
+        result = func(*args, **kwargs)
+        sys.settrace(None)
+        return result
+    return _func
+
+
+# ###### Synchronization
+
+# In[16]:
+
+
+# Synchronize two (or more) functions on a given lock.
+from threading import Lock
+def synchronized(lock):
+    """Synchronization decorator
+    """
+    def wrap(func):
+        def new_func(*args, **kwargs):
+            lock.acquire()
+            try:
+                return func(*args, **kwargs)
+            finally:
+                lock.release()
+        return new_func
+    return wrap
+
+
+# In[17]:
+
+
+# Example usage:
+
+my_lock = Lock()
+
+
+@synchronized(my_lock)
+def call(*args):
+    pass
+
+
+@synchronized(my_lock)
+def call2(*args):
+    pass
+
+
+# ###### Type Enforcement (accepts/returns)
+
+# In[40]:
+
+
+import sys
+
+def info(fname, expected, actual, flag):
+    """Convenience function returns nicely formatted error/warning msg.
+    """
+    fmt = lambda types: ', '.join([str(t).split('\'')[1] for t in types])
+    expected, actual = fmt(expected), fmt(actual)
+    msg = f'`{fname}` method ' +          ('accepts', 'returns')[flag] + f'({expected}) but ' +          ('was given', 'result is')[flag] + f'({actual}).'
+    return msg
+
+def accepts(*types, **kwargs):
+    """Function decorator. Checks decorated function's arguments are
+    of the expected types.
+    
+    Paramsters:
+    -----------
+    types: The expected types of the inputs to the decorated function.
+           Must specify type for each parameter.
+    kwargs: Optional specification of `debug` level (this is the only valid
+            keyword argument, no other should be given).
+            debug = (0 | 1 | 2)
+    """
+    if kwargs == dict():
+        debug = 1
+    else:
+        debug = kwargs['debug']
+    
+    try:
+        def decorator(func):
+            def new_func(*args):
+                if debug == 0:
+                    return func(*args)
+                assert len(args) == len(types)
+                argtypes = tuple(map(type, args)) # 666
+                if argtypes != types:
+                    msg = info(func.__name__, types, argtypes, 0)
+                    if debug == 1:
+                        print(f'TypeWarning : {msg}.', file=sys.stderr)
+                    elif debug == 2:
+                        raise TypeError(msg)
+                return func(*args)
+            new_func.__name__ = func.__name__
+            return new_func
+        return decorator
+    
+    except KeyError as e:
+        raise KeyError(e)
+    except TypeError as e:
+        raise TypeError(e)
+
+def returns(return_type, **kwargs):
+    """Function decorator. Check decorated function's return value is of the expected type.
+    """
+    try:
+        if kwargs == dict():
+            # dafault level: MEDIUM
+            debug = 1
+        else:
+            debug = kwargs['debug']
+        
+        def decorator(func):
+            def new_func(*args):
+                result = func(*args)
+                if debug == 0:
+                    return result
+                res_type = type(result)
+                if res_type != return_type:
+                    msg = info(f.__name__, (return_type, ), (res_type, ), 1)
+                    if debug == 1:
+                        print(f'TypeWarning : {msg}.', file=sys.stderr)
+                    elif debug == 2:
+                        raise TypeError(msg)
+                return result
+            new_func.__name__ = func.__name__
+            return new_func
+        return decorator
+    except KeyError as e:
+        raise KeyError(e)
+    except TypeError as e:
+        raise TypeError(e)
+
+
+# In[41]:
+
+
+@accepts(int, int, int)
+@returns(float)
+def average(x, y, z):
+    return (x + y + z) / 3
+
+
+# In[42]:
+
+
+average(1, 3, .5)
+
+
+# ###### CGI method wrapper(略)
+
+# ###### State Machine Implementation
+
+# In[ ]:
+
+
+import types
+import itertools
+
+import logging
+logging.basicConfig(filename="gf_info.txt",
+    format = "%(levelname)-10s %(message)s",
+    level = logging.ERROR)
+from functools import wraps
+
+def truncated(alist, cmprsn):
+    for x in alist:
+        if x.__name__ == cmprsn:
+            break
+        yield x
+
+class ContextBase(object):
+    pass
+
+class _StateVariable(object):
+    """Attribute of a class to maintain state.
+    State Variable objects are instantiated indirectly via calls to the
+    TransitionTable class's initialize method. TransitionTable objects are
+    created at the class level.
+    """
+    def __init__(self, transTable, context):
+        self.__current_state = transTable.initialstate
+        self.__next_state = transTable.initialstate
+        self.sTable = transTable
+        self.__statestack = []
+        self.__ctxClass = context.__class__
+    
+    def toNextState(self, context):
+        """Transition to next state, if a next_state is different.
+        In addition to the actual state transition, it invokes onLeave
+        and onEnter methods as required.
+        """
+        if self.__next_state is not self.__current_state:
+            cc = context.__class__
+            tt_name = self.sTable.inst_state_name
+            logging.debug(f'Transitioning to state {self.__next_state.__name__}.')
+            
+            def callInState(methName, curr_state):
+                pass
 
