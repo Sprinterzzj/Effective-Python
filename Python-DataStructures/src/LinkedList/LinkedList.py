@@ -1,5 +1,10 @@
+from collections.abc import Iterable
+
+
 class Node(object):
-    """A single linked node
+    """链表的单个节点的类, 有两个属性:
+    1. data, 当前的元素
+    2. next, 下一个 `Node` 实例的引用 
     """
     def __init__(self, data, next=None):
         
@@ -7,23 +12,32 @@ class Node(object):
         self.next = next
     
     @classmethod
-    def build(cls, data_list):
+    def build(cls, sourceCollection:Iterable):
         """构造单链表. 尾部节点的 next 为 None.
-
-        Parameters
-        ---------
-        data_list: a list of data
         """
-        if len(data_list) == 0:
-            raise ValueError('`data_list`必须至少有一个元素.')
-        if len(data_list) == 1:
-            head = cls(data_list[0], None)
+        if not isinstance(sourceCollection, Iterable):
+            raise TypeError('`sourceCollection` must be type of Iterable.')
+        
+        if len(sourceCollection) == 0:
+            raise ValueError('`sourceCollection`必须至少有一个元素.')
+        
+        if len(sourceCollection) == 1:
+            head = cls(sourceCollection[0], None)
         else:
-            head = cls(data_list[0], cls.build(data_list[1:]))
+            head = cls(sourceCollection[0], cls.build(sourceCollection[1:]))
         return head
     
+    @property
+    def size(self):
+        """返回当前节点开始到尾部节点的节点数.
+        """
+        if self.next is None:
+            return 1
+        else:
+            return 1 + self.next.size
+    
     def traversal(self):
-        """遍历链表
+        """遍历链表.
         """
         head = self
         while head is not None:
@@ -31,8 +45,8 @@ class Node(object):
             head = head.next
     
     def search(self, value):
-        """顺序遍历链表, 返回 Node.data == value
-        的第一个Node, 如果这样的Node不存在就返回NullNode
+        """遍历链表, 返回 Node.data == value
+        的第一个Node, 如果这样的Node不存在就返回NullNode.
         """
         for node in self.traversal():
             if node.data == value:
@@ -94,7 +108,7 @@ class Node(object):
     
     def __getitem__(self, index):
        
-        if index <0:
+        if index < 0:
             raise IndexError('`index`必须大于零.')
         for i, node in enumerate(self.traversal()):
             if index == i:
@@ -134,4 +148,16 @@ class Node(object):
         result += 'NULL'
         return result
     
+    def __iter__(self):
+
+        return self.traversal()
+    
+    def __contains__(self, nodeOrvalue):
+        
+        if isinstance(nodeOrvalue, self.__class__):
+            value = nodeOrvalue.data
+        else:
+            value = nodeOrvalue
+        return self.search(value) != NullNode
+
 NullNode = Node(None, None)

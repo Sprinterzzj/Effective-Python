@@ -136,6 +136,8 @@ class LinkedBag(Bag):
             frontNode.next = targetNode.next
         
         self.size -= 1
+        if len(self) < len(self.items) // 2: #如果有必要就缩容
+            self.items = Array.decrease_capacity(self.items)
         
 
 class ArraySortedBag(ArrayBag):
@@ -147,7 +149,7 @@ class ArraySortedBag(ArrayBag):
     def _add(self, item):
         
         if len(self) == len(self.items): # 判断数组满了没有, 满了就先扩容
-            self._increase_capacity()
+            self.items = Array.increase_capacity(self.items)
         if self.isEmpty() or item >= self.items[len(self) - 1]:
             super()._add(item)
         else:
