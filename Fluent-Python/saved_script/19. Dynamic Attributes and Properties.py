@@ -585,6 +585,34 @@ test.__dict__
 # 3. \_\_getattribute\_\_: Always called when there is an attempt to retrieve the named attribute, except when the attribute sought is a special attribute or method. Dot notation and the get attr and hasattr built-ins trigger this method. *__getattr__ is only invoked after __getattribute__, and only when __getattribute__ raises AttributeError*. To retrieve attributes of the instance obj without triggering an infinite recursion, im‐plementations of __getattribute__ should use super().__getattri bute__(obj, name).
 # 4. cls.\_\_setattr\_\_(self, name, value)
 
+# In[24]:
+
+
+class A():
+    b = 3
+    def __init__(self, c):
+        self.c = c
+        self.b = 6
+
+
+# In[25]:
+
+
+a = A(6)
+
+
+# In[26]:
+
+
+getattr(a, 'b')
+
+
+# In[29]:
+
+
+A.__getattribute__(a, 'b')
+
+
 # In[ ]:
 
 
