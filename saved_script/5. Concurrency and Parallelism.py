@@ -1041,9 +1041,7 @@ class Fetcher(object):
         self.client.send(
             request.format(self.path, self.host).encode("utf8"))
         #发送数据后, 继续监听socket是否可读
-        selector.register(self.client.fileno(), 
-                          EVENT_READ, 
-                           self._readable)
+        selector.register(self.client.fileno(), EVENT_READ, self._readable)
 
     def _readable(self, key):
         """从内核空间读取数据到用户空间, 注意这里不能用while循环.

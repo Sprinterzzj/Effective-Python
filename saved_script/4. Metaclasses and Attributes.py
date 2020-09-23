@@ -16,7 +16,8 @@
 # 4. 如果User定义了__getattr__方法, 调用__getattr__方法, 否则:
 # 5. 抛出AttributeError.
 # 
-# 注意user.age 和user.__dict__['age']调用的逻辑不同
+# 注意user.age 和user.__dict__['age']调用的逻辑不同  
+# 总结就是: 数据描述符->实例属性->非数据描述符->类属性
 
 # ### 用 property实现动态属性
 
@@ -37,13 +38,14 @@ r1.ohms += 1000
 r1.ohms
 
 
-# In[5]:
+# In[3]:
 
 
 # 如果你要实现自己的setter方法，你可以用@property装饰器
 # 和setter方法
 class VoltageResistance(Resistor):
-    def __init__(self, ohms): super().__init__(ohms)
+    def __init__(self, ohms): 
+        super().__init__(ohms)
         #设置私有属性voltage
         self._voltage = 0
     #getter方法
@@ -63,7 +65,7 @@ r2.voltage = 10
 r2.current
 
 
-# In[9]:
+# In[11]:
 
 
 #你也可以在setter方法里面加入其他功能, 例如类型检查
@@ -108,29 +110,22 @@ class FixedResistance(Resistor):
 
 #我们的需求: 需要知道user的年龄
 from datetime import date, datetime
+
+
 class User(object):
     def __init__(self, name, birthday):
         self.name = name
         self.birthday = birthday
         self._age = 0
-    
-    #计算属性
+
+    # lazy属性
     @property
     def age(self):
         return datetime.now().year - self.birthday.year
+
     @age.setter
     def age(self, value):
         self._age = value
-
-
-# In[1]:
-
-
-#@property的注意点
-##1.@property指定的属性 只能在类和子类之间共享。
-##2.@property指定的方法无法被其他属性复用
-##3.不要在@property指定的属性的方法中修改其他属性的值
-##4.确保你的@property的方法 simple and fast
 
 
 # In[15]:
@@ -138,43 +133,51 @@ class User(object):
 
 #一个 @property的高级用法
 from datetime import datetime
+
+
 class Bucket(object):
     def __init__(self, period):
-        self.period_delta = timedelta(seconds = period)
+        self.period_delta = timedelta(seconds=period)
         self.reset_time = datetime.now()
         self.max_quota = 0
         self.quota_consumed = 0
+
     def __repr__(self):
-        return ('Bucket(max_quota = %d, quota_consumed = %d)' %                (self.max_quota, self.quota_consumed))
+        return ('Bucket(max_quota = %d, quota_consumed = %d)' %
+                (self.max_quota, self.quota_consumed))
     # 用@property的方法 maintain那些经常改变(例如数值变化)的属性(例如上面的计算年龄)
     # 这样写的好处是，Bucket.quota 属性不需要知道class的变化，他只需要枚举
-    #所有可能的状态在做相应的改变就可以了。
+    # 所有可能的状态在做相应的改变就可以了。
     @property
     def quota(self):
         return self.max_quota - self.quota_consumed
+
     @quota.setter
     def quota(self, amount):
-        delta = self.max_quota - amount      
+        delta = self.max_quota - amount
         if amount == 0:
-            #Quota being reset for a new period
+            # Quota being reset for a new period
             self.quota_consumed = 0
             self.max_quota = 0
         elif delta < 0:
-            #Quota being filled for the new period
+            # Quota being filled for the new period
             assert self.quota_consumed == 0
             self.max_quota = amnount
         else:
-            #Quota being consumed during the period
+            # Quota being consumed during the period
             assert self.max_quota >= self.quota_consumed
             self.quota_consumed += delta
+
 
 def fill(bucket, amount):
     now = datetime.now()
     if now - bucket.reset_time > bucket.period_delta:
-        #此时bucket需要被重置
+        # 此时bucket需要被重置
         bucket.quota = 0
         bucket.reset_time = now
     bucket.quota += amount
+
+
 def deduct(bucket, amount):
     now = datetime.now()
     if now - bucket.reset_time > bucket.period_delta:
@@ -183,7 +186,16 @@ def deduct(bucket, amount):
         return False
     bucket.quota - amount
     return True
-        
+
+
+# In[1]:
+
+
+# @property的注意点
+# 1.@property指定的属性 只能在类和子类之间共享。
+# 2.@property指定的方法无法被其他属性复用
+# 3.不要在@property指定的属性的方法中修改其他属性的值
+# 4.确保你的@property的方法 simple and fast
 
 
 # ### 用描述符实现getter和setter
@@ -195,48 +207,58 @@ def deduct(bucket, amount):
 
 
 import numbers
-#IntField属性描述符
+# IntField属性描述符
+
+
 class IntField(object):
     def __get__(self, instance, owner):
         #Owner是类本身, 不是实例化
         print(instance, owner)
         return self.value
+
     def __set__(self, instance, value):
-        #instance 是类的实例化
+        # instance 是类的实例化
         if not isinstance(value, numbers.Integral):
             raise ValueError('Need int input!')
         else:
             self.value = value
         print(instance, value)
-                 
+
     def __delete__(self, instance):
         pass
-#NondataField非属性描述符
+# NondataField非属性描述符
+
+
 class NondataField(object):
     def __get__(self, instance, owner):
         pass
 
 
-# In[23]:
+# In[12]:
 
 
-#数据描述符
+# 数据描述符
 class Grade(object):
+    
     def __init__(self):
         self._value = 0
+
     def __get__(self, instance, instance_type):
         return self._value
+
     def __set__(self, instance, value):
         if not (0 <= value <= 100):
             raise ValueError('Grade must be between 0 and 100')
         self._value = value
+
+
 class Exam(object):
     math_grade = Grade()
     writing_grade = Grade()
     science_grade = Grade()
 
 
-# In[28]:
+# In[13]:
 
 
 #上面的Exam类是有bug的：
@@ -252,35 +274,46 @@ print('Second', second_exam.writing_grade, 'is right')
 print('First ', first_exam.writing_grade, 'is wrong')
 
 
-# In[13]:
+# In[20]:
 
 
-#解决方案：在基类中维护一个储存实例的字典
+# 解决方案：在基类中维护一个储存实例的字典
 class Grade_v2(object):
     def __init__(self):
-        #这一方法的缺点就是消耗内存
+        # 这一方法的缺点就是消耗内存
         self._values = {}
+
     def __get__(self, instance, instance_type):
-        if instance is None: return self
-        print(instance)
-        return self._values.get(instance, 0) #第二个参数是没有找到instance时默认创建的
+        if instance is None:
+            return self
+        print(instance, instance_type)
+        return self._values.get(instance, 0)  # 第二个参数是没有找到instance时默认创建的
+
     def __set__(self, instance, value):
         if not (0 <= value <= 100):
             raise ValueError('Grade must be between 0 and 100')
         self._values[instance] = value
+
+
 class Exam_v2(object):
     math_grade = Grade_v2()
     writing_grade = Grade_v2()
     science_grade = Grade_v2()
 
 
-# In[14]:
+# In[21]:
 
 
 a = Exam_v2()
 b = Exam_v2()
 a.math_grade = 30
 b.math_grade = 70
+
+
+# In[22]:
+
+
+a.math_grade
 
 
 # In[1]:

@@ -4,7 +4,7 @@
 # 1. 属性描述符本质上是**类方法**.
 # 2. 和 property 一样. 实例的点运算操作会优先 access 描述符.
 
-# In[12]:
+# In[1]:
 
 
 class Quantity(object):
@@ -42,7 +42,7 @@ class LineItem(object):
         return self.weight * self.price
 
 
-# In[16]:
+# In[2]:
 
 
 x = LineItem('zzj', 90, 450)
@@ -50,7 +50,7 @@ print(x.__dict__)
 print(x.weight)
 
 
-# In[23]:
+# In[3]:
 
 
 # 这一版的代码我们自动生成属性的名字.
@@ -67,6 +67,7 @@ class Quantity(object):
     __num_instance = 0
 
     def __init__(self):
+        
         cls = self.__class__
         prefix = cls.__name__
         index = cls.__num_instance
@@ -104,7 +105,7 @@ class LineItem(object):
         return self.weight * self.price
 
 
-# In[24]:
+# In[4]:
 
 
 x = LineItem('zzj', 90, 450)
@@ -117,7 +118,7 @@ print(Quantity.counter())
 # 
 # ![img/20_1.png](img/20_1.png)
 
-# In[3]:
+# In[11]:
 
 
 import abc
@@ -130,6 +131,7 @@ class AutoStorage(object):
     __counter = 0
 
     def __init__(self):
+        # 初始化函数生成一个唯一的字符串, 它是私有实例属性的名字
         cls = self.__class__
         prefix = cls.__name__
         index = cls.__counter
@@ -142,17 +144,17 @@ class AutoStorage(object):
         else:
             return getattr(instance, self.storage_name)
 
-    def __set__(self, isntance, value):
+    def __set__(self, instance, value):
         setattr(instance, self.storage_name, value)
 
 
-# In[4]:
+# In[12]:
 
 
 # 通常称 override 了 set 方法的描述符为 override descriptor
 class Validated(abc.ABC, AutoStorage):
     """AutoStorage abstract subclass that overrides the __set__ method, 
-    calling a vali date method that must be implemented by subclasses.
+    calling a validate method that must be implemented by subclasses.
     """
 
     def __set__(self, instance, value):
@@ -164,12 +166,12 @@ class Validated(abc.ABC, AutoStorage):
         raise NotImplementedError
 
 
-# In[5]:
+# In[13]:
 
 
 # Quantity 和 NonBlank 继承了 抽象类 Validated,
 # 实现了 validate 方法.
-# 注意: validate 的 返回值在 Validate class 已经被限制了.
+# 注意: validate 方法的返回方式在 Validated 中被限制了.
 
 
 class Quantity(Validated):
@@ -189,7 +191,7 @@ class NonBlank(Validated):
             return value
 
 
-# In[6]:
+# In[14]:
 
 
 class LineItem(object):
@@ -207,9 +209,25 @@ class LineItem(object):
         return self.weight * self.price
 
 
+# In[23]:
+
+
+a = LineItem('zzj', 3, 4)
+
+LineItem.__dict__['weight'].__dict__
+
+b = LineItem('zzj2', 3.5, 4.5)
+
+LineItem.__dict__['weight'].__dict__
+
+print(a.__dict__)
+
+print(b.__dict__)
+
+
 # ###### Overriding Versus Nonoverriding Descriptors
 
-# In[8]:
+# In[24]:
 
 
 # 让我们定义一些辅助函数
@@ -237,7 +255,7 @@ def print_args(name, *args):
     print(f'-> {cls_name(args[0])}.__{name}__({pseudo_args})')
 
 
-# In[9]:
+# In[25]:
 
 
 class Overriding(object):
@@ -261,7 +279,7 @@ class NonOverriding(object):
         print_args('get', self, instance, instance_type)
 
 
-# In[10]:
+# In[40]:
 
 
 class Managed(object):
@@ -272,7 +290,7 @@ class Managed(object):
         print(f'-> Managed.spam({display(self)})')
 
 
-# In[29]:
+# In[27]:
 
 
 # 让我们测试
@@ -292,7 +310,7 @@ print(vars(obj))
 print(obj.over)
 
 
-# In[30]:
+# In[31]:
 
 
 # 让我们测试
@@ -327,7 +345,7 @@ print(obj.non_over)
 # 同名的实例对象.
 # 然后这个同名的实例属性就会覆盖掉描述符的 get 方法!!!
 obj.non_over = 7
-obj.non_over
+print(obj.non_over)
 
 # 但是在类上调用之可以正常访问
 print(Managed.non_over)
@@ -336,11 +354,13 @@ del obj.non_over
 print(obj.non_over)
 
 
-# overwriting a descriptor in the class
-# 
-# Although the reading of a class attribute can be controlled by a descriptor with __get__ attached to the managed class, the writing of a class attribute cannot be handled by a descriptor with __set__ attached to the same class.
+# **Overwriting a descriptor in the class**
+# Class.XXX 会调用相关描述符的__get__方法, 并且优先级高于同名的类属性; 但 Class.XXX 不会调用相关描述符的__set__方法而是会创建同名的实例属性, **原本的描述符会彻底丢失!**
+# 查找顺序(实例上点运算): 数据描述符->实例属性->非数据描述符->类属性   
+# 查找顺序(类上点运算): 描述符->类方法    
+# 注意不是覆盖顺序!!! 
 
-# In[38]:
+# In[35]:
 
 
 # 任何的描述符都可以按如下的方法覆盖掉:
@@ -353,6 +373,9 @@ Managed.non_over = 1
 # 描述符全部被覆盖掉了
 print(Managed.__dict__)
 
+print(Managed.over, Managed.over_no_get, Managed.non_over)
+print(obj.over, obj.over_no_get, obj.non_over)
+
 
 # ###### Methods are Descriptors
 # 
@@ -362,7 +385,7 @@ print(Managed.__dict__)
 
 
 obj = Managed()
-# 注意 在实例上和在class上得到的是不同发对象！！！
+# 注意 在实例上和在class上得到的是不同对象！！！
 # As usual with descriptors, 
 # the __get__ of a function returns a reference to itself 
 # when the access happens **through the managed class**. 
@@ -378,7 +401,7 @@ obj.spam = 7
 print(obj.spam)
 
 
-# In[41]:
+# In[45]:
 
 
 # 来看下面的例子
@@ -395,7 +418,7 @@ class Text(collections.UserString):
         return self[::-1]
 
 
-# In[56]:
+# In[46]:
 
 
 word = Text('forward')
@@ -404,30 +427,35 @@ print(word.reverse())
 print(Text.reverse(Text('backward')))
 
 
-# In[59]:
+# In[47]:
 
 
 # 这两个调用的返回值: 函数, bounded method
 print(type(Text.reverse), type(word.reverse))
+
 # 任何函数(注意不仅仅是实例方法)都是一个非数据描述符,
 # 调用它的 __get__ 方法将会得到一个 method bound to that instance
 print(Text.reverse.__get__(word))
+
 # 调用 函数对象的 __get__ 方法 并且 instance参数设置为 None 会返回
 # 函数本身
 print(Text.reverse.__get__(None, Text))
+
 # 等价于 Text.reverse.__get__(word)
 print(word.reverse)
-# bound method 有一个 __self__ 属性, 
+
+# bound method 有一个 __self__ 属性,
 # 返回绑定的实例的引用
 print(word.reverse.__self__)
+
 # bound method 有一个 __func__ 属性,
 # 返回原始函数的引用
 print(word.reverse.__func__ is Text.reverse)
 
-# The bound method object also has a __call__ method, 
-# which handles the actual invo‐cation. 
-# This method calls the original function referenced in __func__, 
-# passing the __self__ attribute of the method as the first argument. 
+# The bound method object also has a __call__ method,
+# which handles the actual invo‐cation.
+# This method calls the original function referenced in __func__,
+# passing the __self__ attribute of the method as the first argument.
 # That’s how the implicit binding of the conventional self argument works.
 
 
